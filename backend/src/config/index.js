@@ -1,6 +1,14 @@
 // SBV Professional V2 - Central Configuration
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
+const dotenv = require('dotenv');
+
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV === 'test') {
+    dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env.test') });
+} else {
+    dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') });
+}
+
 
 // Environment validation
 const requiredEnvVars = [
