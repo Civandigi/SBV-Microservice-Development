@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/assets/css/responsive-improvements.css">
     <link rel="stylesheet" href="/assets/css/responsive-framework.css">
     <link rel="stylesheet" href="/assets/css/sidebar-preload.css">
+    <link rel="stylesheet" href="/assets/css/service-status.css">
     <!-- Master Typography - MUSS als LETZTE CSS Datei kommen -->
     <link rel="stylesheet" href="/assets/css/master-typography.css">
     
@@ -199,6 +200,21 @@
                                 </div>
                             </div>
                         </aside>
+                    </div>
+                    
+                    <!-- PHASE 4: SERVICE MONITORING (ADMIN ONLY) -->
+                    <div id="admin-service-monitoring" class="service-monitoring-section" style="display: none;">
+                        <h2 class="text-xl font-bold text-[var(--color-text-primary)] mb-6">Service-Überwachung</h2>
+                        
+                        <!-- Service Health Status -->
+                        <div id="service-status" class="mb-8">
+                            <!-- Dynamic service health cards will be inserted here -->
+                        </div>
+                        
+                        <!-- Service Statistics -->
+                        <div id="service-stats" class="mb-8">
+                            <!-- Dynamic service stats will be inserted here -->
+                        </div>
                     </div>
                 </div>
             </div>

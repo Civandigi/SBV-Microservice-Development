@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teilprojekte mit Service-Status - SBV Professional</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" href="../assets/css/responsive-improvements.css">
+    <link rel="stylesheet" href="../assets/css/responsive-framework.css">
+    <link rel="stylesheet" href="../assets/css/sidebar-preload.css">
+    <!-- Master Typography - MUSS als LETZTE CSS Datei kommen -->
+    <link rel="stylesheet" href="../assets/css/master-typography.css">
+    <script src="../assets/js/tailwind-config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color-primary: #A4D2F4;
+            --color-secondary: #6BAF38;
+            --color-danger: #ef4444;
+            --color-warning: #f59e0b;
+            --color-success: #10b981;
+            --color-text-primary: #111827;
+            --color-text-secondary: #6B7280;
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f3f4f6;
+            --color-card-background: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-red: #DC2626;
+            --color-black: #000000;
+            --color-light-blue: #A4D2F4;
+            --color-green: #6BAF38;
+            --color-background: #F8FAFC;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        /* Service Status Indicators */
+        .service-status-indicator {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+        
+        .status-online { background-color: #10b981; }
+        .status-offline { background-color: #ef4444; }
+        .status-processing { background-color: #f59e0b; }
+        
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Processing States */
+        .processing-card {
+            border: 2px dashed var(--color-warning);
+            background: linear-gradient(45deg, 
+                rgba(245, 158, 11, 0.1) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(245, 158, 11, 0.1) 50%,
+                rgba(245, 158, 11, 0.1) 75%, 
+                transparent 75%);
+            background-size: 20px 20px;
+            animation: processing-stripe 2s linear infinite;
+        }
+        
+        @keyframes processing-stripe {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 20px; }
+        }
+        
+        /* Progress Animation */
+        .progress-bar {
+            height: 6px;
+            background-color: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
+            transition: width 0.8s ease;
+            position: relative;
+        }
+        
+        .progress-fill.animated::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.6),
+                transparent
+            );
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            gap: 0.25rem;
+        }
+        
+        .status-erkannt { background-color: #dbeafe; color: #1e40af; }
+        .status-verarbeitung { background-color: #fef3c7; color: #92400e; }
+        .status-bereit { background-color: #d1fae5; color: #065f46; }
+        .status-fehler { background-color: #fee2e2; color: #991b1b; }
+        
+        /* Card Hover Effects */
+        .teilprojekt-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .teilprojekt-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Microservice Integration Panel */
+        .service-panel {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .service-panel.error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: var(--color-danger);
+        }
+        
+        .service-panel.success {
+            background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+            border-color: var(--color-success);
+        }
+    </style>
+</head>
+<body class="bg-[var(--color-background)]">
+    <!-- Sidebar Component wird hier eingefügt -->
+    <div id="sidebarContainer"></div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-[var(--color-text-primary)]">
+                        Teilprojekte Management
+                    </h1>
+                    <p class="text-sm text-[var(--color-text-secondary)] mt-1">
+                        Automatisch erkannte und manuell verwaltete Teilprojekte
+                    </p>
+                </div>
+                
+                <!-- Service Status Panel -->
+                <div class="service-status-panel">
+                    <div class="service-status-indicator">
+                        <div class="status-dot status-online" id="serviceStatusDot"></div>
+                        <span class="text-sm" id="serviceStatusText">Microservice: Aktiv</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Microservice Integration Status -->
+        <div class="p-6">
+            <div id="serviceIntegrationPanel" class="service-panel">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="service-status-indicator">
+                        <div class="status-dot status-processing" id="integrationStatusDot"></div>
+                        <h3 class="font-semibold text-[var(--color-text-primary)]">
+                            Microservice Integration
+                        </h3>
+                    </div>
+                </div>
+                <div class="text-sm text-[var(--color-text-secondary)]" id="integrationStatusText">
+                    Verbindung wird hergestellt...
+                </div>
+                
+                <!-- Real-time Job Progress -->
+                <div id="jobProgressContainer" class="hidden mt-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium">Verarbeitung läuft...</span>
+                        <span class="text-sm" id="jobProgressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill animated" id="jobProgressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teilprojekte Grid -->
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" id="teilprojekteGrid">
+                <!-- Teilprojekte werden hier dynamisch eingefügt -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-12">
+                <div class="mx-auto h-24 w-24 text-gray-400 mb-4">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-[var(--color-text-primary)] mb-1">
+                    Keine Teilprojekte gefunden
+                </h3>
+                <p class="text-[var(--color-text-secondary)] mb-6">
+                    Laden Sie ein Gesuch hoch oder erstellen Sie Teilprojekte manuell.
+                </p>
+                <button onclick="window.gesuchManager?.uploadGesuch()" 
+                        class="inline-flex items-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90 transition-opacity">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Gesuch hochladen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../assets/js/websocket-manager.js"></script>
+    <script src="../assets/js/gesuch-enhanced.js"></script>
+    <script type="module">
+        import '../assets/js/sidebar-component.js';
+        
+        // Teilprojekte Manager Class
+        class TeilprojekteManager {
+            constructor() {
+                this.teilprojekte = [];
+                this.currentJobId = null;
+                this.serviceStatus = 'connecting';
+                
+                this.initializeWebSocket();
+                this.loadTeilprojekte();
+                this.updateServiceStatus();
+                
+                console.log('✅ Teilprojekte Manager initialized');
+            }
+            
+            initializeWebSocket() {
+                if (typeof window.wsManager !== 'undefined') {
+                    // Listen for real-time updates
+                    window.wsManager.on('gesuch-processed', (data) => {
+                        this.handleGesuchProcessed(data);
+                    });
+                    
+                    window.wsManager.on('job-progress', (data) => {
+                        this.updateJobProgress(data);
+                    });
+                    
+                    window.wsManager.on('service-status', (data) => {
+                        this.updateServiceStatus(data);
+                    });
+                    
+                    window.wsManager.on('connected', () => {
+                        this.serviceStatus = 'online';
+                        this.updateServiceStatusUI();
+                    });
+                    
+                    window.wsManager.on('disconnected', () => {
+                        this.serviceStatus = 'offline';
+                        this.updateServiceStatusUI();
+                    });
+                }
+            }
+            
+            async loadTeilprojekte() {
+                try {
+                    const response = await fetch(`${window.API_BASE_URL || ''}/api/teilprojekte`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.teilprojekte = data.teilprojekte || [];
+                        this.renderTeilprojekte();
+                    } else {
+                        console.error('Failed to load teilprojekte:', response.status);
+                        this.showEmptyState();
+                    }
+                } catch (error) {
+                    console.error('Load teilprojekte error:', error);
+                    this.showEmptyState();
+                }
+            }
+            
+            renderTeilprojekte() {
+                const grid = document.getElementById('teilprojekteGrid');
+                const emptyState = document.getElementById('emptyState');
+                
+                if (!this.teilprojekte.length) {
+                    this.showEmptyState();
+                    return;
+                }
+                
+                emptyState.style.display = 'none';
+                
+                grid.innerHTML = this.teilprojekte.map((tp, index) => `
+                    <div class="teilprojekt-card bg-white rounded-lg shadow-sm border border-[var(--color-border)] p-6 ${tp.processing ? 'processing-card' : ''}">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg font-bold text-[var(--color-primary)]">
+                                    TP${index + 1}
+                                </span>
+                                ${this.renderStatusBadge(tp.status)}
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-[var(--color-text-secondary)]">Budget</div>
+                                <div class="font-bold text-[var(--color-text-primary)]">
+                                    CHF ${(tp.budget || 0).toLocaleString()}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-semibold text-[var(--color-text-primary)] mb-2">
+                            ${tp.name}
+                        </h3>
+                        <p class="text-sm text-[var(--color-text-secondary)] mb-4 line-clamp-2">
+                            ${tp.beschreibung || 'Keine Beschreibung verfügbar'}
+                        </p>
+                        
+                        <!-- Processing Progress -->
+                        ${tp.processing ? `
+                            <div class="mb-3">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-xs font-medium">Verarbeitung...</span>
+                                    <span class="text-xs">${tp.progress || 0}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill animated" style="width: ${tp.progress || 0}%"></div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <!-- Actions -->
+                        <div class="flex gap-2 mt-4">
+                            <button onclick="teilprojekteManager.viewDetails('${tp.id}')" 
+                                    class="flex-1 px-3 py-2 text-sm bg-[var(--color-primary)] text-white rounded hover:opacity-90 transition-opacity">
+                                Details
+                            </button>
+                            ${tp.status === 'bereit' ? `
+                                <button onclick="teilprojekteManager.createRapport('${tp.id}')" 
+                                        class="flex-1 px-3 py-2 text-sm bg-[var(--color-secondary)] text-white rounded hover:opacity-90 transition-opacity">
+                                    Rapport
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            renderStatusBadge(status) {
+                const statusConfig = {
+                    'erkannt': { class: 'status-erkannt', icon: '👁️', text: 'Erkannt' },
+                    'verarbeitung': { class: 'status-verarbeitung', icon: '⏳', text: 'Verarbeitung' },
+                    'bereit': { class: 'status-bereit', icon: '✅', text: 'Bereit' },
+                    'fehler': { class: 'status-fehler', icon: '❌', text: 'Fehler' }
+                };
+                
+                const config = statusConfig[status] || statusConfig['erkannt'];
+                
+                return `
+                    <span class="status-badge ${config.class}">
+                        <span class="mr-1">${config.icon}</span>
+                        ${config.text}
+                    </span>
+                `;
+            }
+            
+            showEmptyState() {
+                document.getElementById('teilprojekteGrid').innerHTML = '';
+                document.getElementById('emptyState').style.display = 'block';
+            }
+            
+            updateServiceStatusUI() {
+                const statusDot = document.getElementById('serviceStatusDot');
+                const statusText = document.getElementById('serviceStatusText');
+                const integrationPanel = document.getElementById('serviceIntegrationPanel');
+                const integrationDot = document.getElementById('integrationStatusDot');
+                const integrationText = document.getElementById('integrationStatusText');
+                
+                if (this.serviceStatus === 'online') {
+                    statusDot.className = 'status-dot status-online';
+                    statusText.textContent = 'Microservice: Online';
+                    integrationDot.className = 'status-dot status-online';
+                    integrationText.textContent = 'Verbindung hergestellt - Real-time Updates aktiviert';
+                    integrationPanel.className = 'service-panel success';
+                } else if (this.serviceStatus === 'offline') {
+                    statusDot.className = 'status-dot status-offline';
+                    statusText.textContent = 'Microservice: Offline';
+                    integrationDot.className = 'status-dot status-offline';
+                    integrationText.textContent = 'Verbindung unterbrochen - Polling-Modus aktiv';
+                    integrationPanel.className = 'service-panel error';
+                } else {
+                    statusDot.className = 'status-dot status-processing';
+                    statusText.textContent = 'Microservice: Verbindung...';
+                    integrationDot.className = 'status-dot status-processing';
+                    integrationText.textContent = 'Verbindung wird hergestellt...';
+                    integrationPanel.className = 'service-panel';
+                }
+            }
+            
+            updateJobProgress(data) {
+                const container = document.getElementById('jobProgressContainer');
+                const progressBar = document.getElementById('jobProgressBar');
+                const progressPercent = document.getElementById('jobProgressPercent');
+                
+                if (data.jobId && data.progress !== undefined) {
+                    container.style.display = 'block';
+                    progressBar.style.width = `${data.progress}%`;
+                    progressPercent.textContent = `${data.progress}%`;
+                    
+                    if (data.progress >= 100) {
+                        setTimeout(() => {
+                            container.style.display = 'none';
+                            this.loadTeilprojekte(); // Reload data
+                        }, 2000);
+                    }
+                }
+            }
+            
+            handleGesuchProcessed(data) {
+                if (data.status === 'completed' && data.teilprojekte) {
+                    // Add new teilprojekte
+                    this.teilprojekte = [...this.teilprojekte, ...data.teilprojekte];
+                    this.renderTeilprojekte();
+                    
+                    // Show success notification
+                    this.showNotification('success', `${data.teilprojekte.length} neue Teilprojekte erkannt`);
+                }
+            }
+            
+            updateServiceStatus(data) {
+                this.serviceStatus = data.healthy ? 'online' : 'offline';
+                this.updateServiceStatusUI();
+            }
+            
+            showNotification(type, message) {
+                // Simple notification - could be enhanced with a proper notification system
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 ${
+                    type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                }`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
+            }
+            
+            viewDetails(teilprojektId) {
+                console.log('View details for:', teilprojektId);
+                // Implementation for viewing teilprojekt details
+            }
+            
+            createRapport(teilprojektId) {
+                console.log('Create rapport for:', teilprojektId);
+                // Implementation for creating rapport
+                window.location.href = `rapport.html?teilprojekt=${teilprojektId}`;
+            }
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.teilprojekteManager = new TeilprojekteManager();
+        });
+    </script>
+</body>
+</html>

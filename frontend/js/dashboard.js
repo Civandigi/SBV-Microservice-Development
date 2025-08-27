@@ -412,11 +412,154 @@ function stopAutoRefresh() {
     }
 }
 
+// ===== PHASE 4: SERVICE MONITORING FOR ADMIN =====
+
+// Service monitoring data
+let serviceMonitoringData = {
+    services: {
+        database: { status: 'unknown' },
+        microservice: { status: 'unknown' },
+        storage: { status: 'unknown' }
+    },
+    stats: {
+        totalJobs: 0,
+        successRate: 0,
+        avgProcessingTime: 0,
+        failedJobs: 0,
+        pendingJobs: 0
+    }
+};
+
+// Load service health data (admin only)
+async function loadServiceHealth() {
+    try {
+        const response = await apiRequest('/api/health/services');
+        if (response.ok) {
+            const data = await response.json();
+            serviceMonitoringData.services = data.services;
+            updateServiceHealthUI();
+        }
+    } catch (error) {
+        console.error('Failed to load service health:', error);
+    }
+}
+
+// Load service statistics (admin only)
+async function loadServiceStats() {
+    try {
+        const response = await apiRequest('/api/health/service-stats');
+        if (response.ok) {
+            const data = await response.json();
+            serviceMonitoringData.stats = data.stats;
+            updateServiceStatsUI();
+        }
+    } catch (error) {
+        console.error('Failed to load service stats:', error);
+    }
+}
+
+// Update service health UI
+function updateServiceHealthUI() {
+    const serviceStatusContainer = document.getElementById('service-status');
+    if (!serviceStatusContainer) return;
+
+    const services = serviceMonitoringData.services;
+    
+    serviceStatusContainer.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            ${Object.entries(services).map(([name, service]) => `
+                <div class="service-card bg-white p-4 rounded-lg shadow-sm border">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-medium text-gray-900 capitalize">${name}</h4>
+                        <span class="status-dot ${service.status === 'healthy' ? 'online' : service.status === 'offline' ? 'offline' : 'processing'}"></span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Status: <span class="font-medium">${service.status}</span>
+                    </p>
+                    ${service.responseTime ? `<p class="text-xs text-gray-500">Response: ${service.responseTime}</p>` : ''}
+                    ${service.error ? `<p class="text-xs text-red-600">Error: ${service.error}</p>` : ''}
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Update service stats UI  
+function updateServiceStatsUI() {
+    const serviceStatsContainer = document.getElementById('service-stats');
+    if (!serviceStatsContainer) return;
+
+    const stats = serviceMonitoringData.stats;
+    
+    serviceStatsContainer.innerHTML = `
+        <div class="stats-grid grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="stat-card bg-white p-4 rounded-lg shadow-sm">
+                <h3 class="text-sm font-medium text-gray-600">Total Jobs</h3>
+                <p class="text-2xl font-bold text-gray-900">${stats.totalJobs}</p>
+            </div>
+            <div class="stat-card bg-white p-4 rounded-lg shadow-sm">
+                <h3 class="text-sm font-medium text-gray-600">Success Rate</h3>
+                <p class="text-2xl font-bold text-green-600">${stats.successRate}%</p>
+            </div>
+            <div class="stat-card bg-white p-4 rounded-lg shadow-sm">
+                <h3 class="text-sm font-medium text-gray-600">Avg Processing</h3>
+                <p class="text-2xl font-bold text-blue-600">${stats.avgProcessingTime}s</p>
+            </div>
+            <div class="stat-card bg-white p-4 rounded-lg shadow-sm ${stats.failedJobs > 0 ? 'border-red-200' : ''}">
+                <h3 class="text-sm font-medium text-gray-600">Failed Jobs</h3>
+                <p class="text-2xl font-bold ${stats.failedJobs > 0 ? 'text-red-600' : 'text-gray-900'}">${stats.failedJobs}</p>
+            </div>
+            <div class="stat-card bg-white p-4 rounded-lg shadow-sm">
+                <h3 class="text-sm font-medium text-gray-600">Pending Jobs</h3>
+                <p class="text-2xl font-bold text-orange-600">${stats.pendingJobs}</p>
+            </div>
+        </div>
+    `;
+}
+
+// Initialize service monitoring for admin users
+async function initServiceMonitoring() {
+    // Check if user has admin role
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    
+    try {
+        const response = await apiRequest('/api/auth/me');
+        const data = await response.json();
+        const userRole = data.user?.role;
+        
+        // Only load service monitoring for admin and super_admin
+        if (userRole === 'admin' || userRole === 'super_admin') {
+            // Show admin service monitoring section
+            const adminSection = document.getElementById('admin-service-monitoring');
+            if (adminSection) {
+                adminSection.style.display = 'block';
+            }
+            
+            await Promise.all([
+                loadServiceHealth(),
+                loadServiceStats()
+            ]);
+            
+            // Auto-refresh service monitoring every 30 seconds
+            setInterval(() => {
+                loadServiceHealth();
+                loadServiceStats();
+            }, 30000);
+        }
+    } catch (error) {
+        console.error('Failed to initialize service monitoring:', error);
+    }
+}
+
 // Export functions for external use
 window.dashboard = {
     loadDashboardData,
     startAutoRefresh,
-    stopAutoRefresh
+    stopAutoRefresh,
+    loadServiceHealth,
+    loadServiceStats,
+    initServiceMonitoring
 };
 
 // Initialize on page load
@@ -425,6 +568,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (document.getElementById('dashboard-content')) {
         await loadDashboardData();
         startAutoRefresh();
+        
+        // Initialize service monitoring for admin users
+        await initServiceMonitoring();
         
         // Stop refresh when page is hidden
         document.addEventListener('visibilitychange', () => {

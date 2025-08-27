@@ -3,6 +3,7 @@ const express = require('express');
 const { testConnection, getStats } = require('../config/database');
 const config = require('../config');
 const { asyncHandler } = require('../middleware/error.middleware');
+const HealthController = require('../controllers/health.controller');
 
 const router = express.Router();
 
@@ -147,6 +148,21 @@ router.get('/email-status', asyncHandler(async (req, res) => {
     }
     
     res.json(status);
+}));
+
+// === PHASE 4: MICROSERVICE MONITORING ===
+
+// Comprehensive service health check
+router.get('/services', HealthController.checkServices);
+
+// Service statistics for admin dashboard
+router.get('/service-stats', HealthController.getServiceStats);
+
+// Microservice-specific health check
+router.get('/microservice', asyncHandler(async (req, res) => {
+    const result = await HealthController.checkMicroservice();
+    const statusCode = result.status === 'healthy' ? 200 : 503;
+    res.status(statusCode).json(result);
 }));
 
 module.exports = router;
