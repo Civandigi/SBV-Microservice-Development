@@ -7,9 +7,9 @@ class GesuchFallbackService {
             // Erstelle Gesuch ohne automatische Verarbeitung
             const result = await query(`
                 INSERT INTO gesuche 
-                (jahr, titel, beschreibung, status, bearbeitet_von, datei_name, datei_groesse)
-                VALUES (?, ?, ?, 'manuell', ?, ?, ?)
-            `, [data.jahr, data.titel, data.beschreibung, data.userId, data.filename, data.filesize]);
+                (jahr, titel, beschreibung, status, erstellt_von)
+                VALUES (?, ?, ?, 'entwurf', ?)
+            `, [data.jahr, data.titel, data.beschreibung, data.userId]);
             
             return {
                 gesuchId: result.lastID,
@@ -28,7 +28,7 @@ class GesuchFallbackService {
                 await query(`
                     INSERT INTO teilprojekte 
                     (gesuch_id, nummer, name, budget, status, beschreibung)
-                    VALUES (?, ?, ?, ?, 'manuell', ?)
+                    VALUES (?, ?, ?, ?, 'offen', ?)
                 `, [gesuchId, tp.nummer, tp.name, tp.budget, tp.beschreibung || '']);
             }
             
@@ -103,18 +103,12 @@ class GesuchFallbackService {
             
             const result = await query(`
                 INSERT INTO rapporte 
-                (teilprojekt_id, titel, beschreibung, status, erstellt_von, template_version)
-                VALUES (?, ?, ?, 'entwurf', ?, 'manual-v1')
+                (teilprojekt_id, titel, beschreibung, status, author_id)
+                VALUES (?, ?, ?, 'entwurf', ?)
             `, [teilprojektId, template.titel, template.beschreibung, userId]);
             
-            // Erstelle Felder für den Rapport
-            for (const field of template.felder) {
-                await query(`
-                    INSERT INTO rapport_felder 
-                    (rapport_id, schluessel, label, typ, erforderlich, placeholder)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                `, [result.lastID, field.key, field.label, field.type, field.required, field.placeholder]);
-            }
+            // Felder werden in der Frontend-Anwendung definiert
+            // Keine separate rapport_felder Tabelle benötigt
             
             return {
                 rapportId: result.lastID,

@@ -2,7 +2,7 @@
 const { query } = require('../config/database');
 const microserviceClient = require('../services/gesuch-microservice.client');
 const fallbackService = require('../services/gesuch-fallback.service');
-const { asyncHandler } = require('../middleware/errorHandler');
+const { asyncHandler } = require('../middleware/error.middleware');
 
 class GesuchController {
     static upload = asyncHandler(async (req, res) => {
