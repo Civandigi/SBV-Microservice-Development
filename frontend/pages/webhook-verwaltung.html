@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook-Verwaltung - SBV Professional</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/swiss-design.css">
+    
+    <!-- Konfiguration -->
+    <script src="../js/config.js"></script>
+    
+    <style>
+        /* Webhook-spezifische Styles */
+        .webhook-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .webhook-status.enabled {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .webhook-status.disabled {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .log-entry {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .log-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .log-status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .log-status.failed {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .log-status.pending {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .config-card {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .response-data {
+            background: #f5f5f5;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="swiss-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <img src="../assets/images/logo.png" alt="SBV Logo" class="nav-logo">
+                <h1 class="nav-title">SBV Professional</h1>
+            </div>
+            <div class="nav-right">
+                <span class="nav-user" id="currentUser">Loading...</span>
+                <button class="btn-logout" onclick="handleLogout()">Ausloggen</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav" style="background: #f8f9fa; padding: 1rem 0; margin-top: 60px;">
+        <div class="container">
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <a href="gesuch-verwaltung.html" class="nav-link" style="color: #666;">Gesuch-Verwaltung</a>
+                <a href="user-verwaltung.html" class="nav-link" style="color: #666;">Benutzerverwaltung</a>
+                <a href="webhook-verwaltung.html" class="nav-link active" style="color: var(--primary-color); font-weight: 500;">Webhook-Verwaltung</a>
+                <a href="rapport.html" class="nav-link" style="color: #666;">Rapporte</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container" style="margin-top: 20px;">
+        <div class="page-header">
+            <h2>Webhook-Verwaltung</h2>
+            <button class="btn-primary" onclick="testWebhook()">
+                <span style="margin-right: 8px;">🔧</span>
+                Webhook testen
+            </button>
+        </div>
+
+        <!-- Configuration Status -->
+        <div class="config-card">
+            <h3>Webhook-Konfiguration</h3>
+            <div id="configStatus" style="margin-top: 15px;">
+                <div class="loading-spinner">Lade Konfiguration...</div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="mb-6">
+            <h3 class="mb-4">Webhook-Statistiken</h3>
+            <div id="webhookStats" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="stat-card">
+                    <div class="stat-label">Gesamt</div>
+                    <div class="stat-value" id="totalWebhooks">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Erfolgreich</div>
+                    <div class="stat-value text-green-600" id="successfulWebhooks">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Fehlgeschlagen</div>
+                    <div class="stat-value text-red-600" id="failedWebhooks">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ausstehend</div>
+                    <div class="stat-value text-orange-600" id="pendingWebhooks">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Type Statistics -->
+        <div class="mb-6">
+            <h3 class="mb-4">Nach Event-Typ</h3>
+            <div id="eventTypeStats" class="bg-white rounded-lg p-4 border">
+                <div class="loading-spinner">Lade Statistiken...</div>
+            </div>
+        </div>
+
+        <!-- Webhook Logs -->
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h3>Webhook-Protokoll</h3>
+                <div class="flex gap-2">
+                    <select id="statusFilter" onchange="loadWebhookLogs()" class="px-4 py-2 border rounded">
+                        <option value="">Alle Status</option>
+                        <option value="success">Erfolgreich</option>
+                        <option value="failed">Fehlgeschlagen</option>
+                        <option value="pending">Ausstehend</option>
+                    </select>
+                    <select id="eventTypeFilter" onchange="loadWebhookLogs()" class="px-4 py-2 border rounded">
+                        <option value="">Alle Events</option>
+                        <option value="gesuch.submitted">Gesuch eingereicht</option>
+                        <option value="teilprojekt.approved">Teilprojekt genehmigt</option>
+                        <option value="test">Test</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="webhookLogs">
+                <div class="loading-spinner">Lade Webhook-Protokoll...</div>
+            </div>
+            
+            <!-- Pagination -->
+            <div id="pagination" class="flex justify-center gap-2 mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        const API_BASE_URL = window.API_BASE_URL || '';
+        const token = localStorage.getItem('authToken');
+        let currentPage = 0;
+        const pageSize = 50;
+
+        // Check authentication
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // Initialize page
+        async function initializePage() {
+            try {
+                // Load user info
+                const userResponse = await fetch(`${API_BASE_URL}/api/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error('Authentication failed');
+                }
+
+                const userData = await userResponse.json();
+                
+                // Check if user is admin
+                if (userData.user.role !== 'admin' && userData.user.role !== 'superadmin') {
+                    alert('Diese Seite ist nur für Administratoren zugänglich.');
+                    window.location.href = 'rapport.html';
+                    return;
+                }
+
+                document.getElementById('currentUser').textContent = userData.user.username;
+
+                // Load webhook data
+                await loadWebhookStats();
+                await loadWebhookLogs();
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                if (error.message === 'Authentication failed') {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login.html';
+                }
+            }
+        }
+
+        // Load webhook statistics
+        async function loadWebhookStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/webhooks/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load stats');
+                }
+
+                const data = await response.json();
+                
+                // Update configuration status
+                const configDiv = document.getElementById('configStatus');
+                configDiv.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <span class="text-sm text-gray-600">Webhook Status:</span>
+                            <div class="webhook-status ${data.configuration.enabled ? 'enabled' : 'disabled'}">
+                                ${data.configuration.enabled ? '✓ Aktiviert' : '✗ Deaktiviert'}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">URL konfiguriert:</span>
+                            <div class="webhook-status ${data.configuration.url_configured ? 'enabled' : 'disabled'}">
+                                ${data.configuration.url_configured ? '✓ Ja' : '✗ Nein'}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Letzter Webhook:</span>
+                            <div class="text-sm">
+                                ${data.overall.last_webhook_at ? 
+                                    new Date(data.overall.last_webhook_at).toLocaleString('de-CH') : 
+                                    'Noch keine Webhooks'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Update statistics
+                document.getElementById('totalWebhooks').textContent = data.overall.total || 0;
+                document.getElementById('successfulWebhooks').textContent = data.overall.successful || 0;
+                document.getElementById('failedWebhooks').textContent = data.overall.failed || 0;
+                document.getElementById('pendingWebhooks').textContent = data.overall.pending || 0;
+                
+                // Update event type stats
+                const eventStatsDiv = document.getElementById('eventTypeStats');
+                if (data.by_event.length > 0) {
+                    eventStatsDiv.innerHTML = `
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-2">Event-Typ</th>
+                                    <th class="text-center py-2">Gesamt</th>
+                                    <th class="text-center py-2">Erfolgreich</th>
+                                    <th class="text-center py-2">Fehlgeschlagen</th>
+                                    <th class="text-center py-2">Erfolgsrate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.by_event.map(event => `
+                                    <tr class="border-b">
+                                        <td class="py-2">${formatEventType(event.event_type)}</td>
+                                        <td class="text-center py-2">${event.count}</td>
+                                        <td class="text-center py-2 text-green-600">${event.successful}</td>
+                                        <td class="text-center py-2 text-red-600">${event.failed}</td>
+                                        <td class="text-center py-2">
+                                            ${event.count > 0 ? 
+                                                Math.round(event.successful / event.count * 100) + '%' : 
+                                                '-'}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    eventStatsDiv.innerHTML = '<p class="text-gray-500">Noch keine Webhook-Events vorhanden.</p>';
+                }
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('configStatus').innerHTML = 
+                    '<div class="alert alert-error">Fehler beim Laden der Statistiken.</div>';
+            }
+        }
+
+        // Load webhook logs
+        async function loadWebhookLogs() {
+            try {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const eventTypeFilter = document.getElementById('eventTypeFilter').value;
+                
+                let url = `${API_BASE_URL}/api/webhooks/logs?limit=${pageSize}&offset=${currentPage * pageSize}`;
+                if (statusFilter) url += `&status=${statusFilter}`;
+                if (eventTypeFilter) url += `&event_type=${eventTypeFilter}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load logs');
+                }
+
+                const data = await response.json();
+                displayWebhookLogs(data.logs);
+                updatePagination(data.pagination);
+
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                document.getElementById('webhookLogs').innerHTML = 
+                    '<div class="alert alert-error">Fehler beim Laden der Logs.</div>';
+            }
+        }
+
+        // Display webhook logs
+        function displayWebhookLogs(logs) {
+            const logsDiv = document.getElementById('webhookLogs');
+            
+            if (logs.length === 0) {
+                logsDiv.innerHTML = '<p class="text-gray-500">Keine Webhook-Logs gefunden.</p>';
+                return;
+            }
+            
+            logsDiv.innerHTML = logs.map(log => `
+                <div class="log-entry">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="font-medium">${formatEventType(log.event_type)}</span>
+                            <span class="log-status ${log.status}">${formatStatus(log.status)}</span>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            ${new Date(log.created_at).toLocaleString('de-CH')}
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm text-gray-600 mb-2">
+                        Entity ID: ${log.entity_id} | Retry Count: ${log.retry_count}
+                    </div>
+                    
+                    ${log.response_data ? `
+                        <details>
+                            <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-800">
+                                Response-Daten anzeigen
+                            </summary>
+                            <div class="response-data">
+                                ${JSON.stringify(log.response_data, null, 2)}
+                            </div>
+                        </details>
+                    ` : ''}
+                    
+                    ${log.status === 'failed' ? `
+                        <button onclick="retryWebhook(${log.id})" 
+                                class="btn-secondary btn-sm mt-2">
+                            Erneut versuchen
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Update pagination
+        function updatePagination(pagination) {
+            const totalPages = Math.ceil(pagination.total / pagination.limit);
+            const paginationDiv = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                paginationDiv.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            // Previous button
+            if (currentPage > 0) {
+                html += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1 border rounded">‹</button>`;
+            }
+            
+            // Page numbers
+            for (let i = 0; i < totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<span class="px-3 py-1 bg-blue-600 text-white rounded">${i + 1}</span>`;
+                } else {
+                    html += `<button onclick="changePage(${i})" class="px-3 py-1 border rounded hover:bg-gray-100">${i + 1}</button>`;
+                }
+            }
+            
+            // Next button
+            if (currentPage < totalPages - 1) {
+                html += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1 border rounded">›</button>`;
+            }
+            
+            paginationDiv.innerHTML = html;
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            loadWebhookLogs();
+        }
+
+        // Test webhook
+        async function testWebhook() {
+            if (!confirm('Möchten Sie einen Test-Webhook senden?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/webhooks/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Webhook-Test erfolgreich!\n\n' + result.message);
+                } else {
+                    alert('Webhook-Test fehlgeschlagen:\n\n' + result.message + 
+                          (result.details ? '\n\nDetails: ' + JSON.stringify(result.details) : ''));
+                }
+                
+                // Reload logs
+                await loadWebhookLogs();
+                await loadWebhookStats();
+
+            } catch (error) {
+                console.error('Test error:', error);
+                alert('Fehler beim Webhook-Test: ' + error.message);
+            }
+        }
+
+        // Retry webhook
+        async function retryWebhook(logId) {
+            if (!confirm('Möchten Sie diesen Webhook erneut versuchen?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/webhooks/retry/${logId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Webhook erfolgreich erneut gesendet!');
+                } else {
+                    alert('Webhook erneut fehlgeschlagen: ' + (result.error || 'Unbekannter Fehler'));
+                }
+                
+                // Reload logs
+                await loadWebhookLogs();
+                await loadWebhookStats();
+
+            } catch (error) {
+                console.error('Retry error:', error);
+                alert('Fehler beim erneuten Versuch: ' + error.message);
+            }
+        }
+
+        // Format event type
+        function formatEventType(eventType) {
+            const typeMap = {
+                'gesuch.submitted': 'Gesuch eingereicht',
+                'teilprojekt.approved': 'Teilprojekt genehmigt',
+                'test': 'Test-Webhook'
+            };
+            return typeMap[eventType] || eventType;
+        }
+
+        // Format status
+        function formatStatus(status) {
+            const statusMap = {
+                'success': 'Erfolgreich',
+                'failed': 'Fehlgeschlagen',
+                'pending': 'Ausstehend'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Logout
+        function handleLogout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '/login.html';
+        }
+
+        // Initialize on load
+        initializePage();
+    </script>
+</body>
+</html>

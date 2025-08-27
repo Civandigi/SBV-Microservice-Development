@@ -1,0 +1,233 @@
+/**
+ * Master Typography System
+ * Diese Datei MUSS als LETZTE CSS-Datei geladen werden
+ * um alle Typography-Einstellungen zu überschreiben
+ */
+
+/* ============================================
+   RESET UND GRUNDLEGENDE EINSTELLUNGEN
+   ============================================ */
+* {
+    /* Verhindere Browser-Inkonsistenzen */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Basis-Schriftart für ALLES */
+html, body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    font-size: 16px !important; /* Base font size */
+    line-height: 1.5 !important;
+}
+
+/* ============================================
+   NAVIGATION TYPOGRAPHY - ABSOLUT EINHEITLICH
+   ============================================ */
+
+/* User Profile Name - ÜBERALL GLEICH */
+#user-name,
+.text-sm.font-semibold {
+    font-size: 0.875rem !important; /* 14px */
+    font-weight: 600 !important;
+    line-height: 1.25rem !important;
+}
+
+/* User Role - ÜBERALL GLEICH */
+#user-role,
+.text-xs {
+    font-size: 0.75rem !important; /* 12px */
+    line-height: 1rem !important;
+}
+
+/* Navigation Links - ALLE GLEICH */
+.nav-link,
+.nav-link-inactive,
+.nav-link-active,
+#nav-menu a,
+nav a {
+    font-size: 0.875rem !important; /* 14px */
+    line-height: 1.25rem !important;
+}
+
+/* Active Navigation */
+.nav-link-active,
+.nav-link.active {
+    font-weight: 600 !important; /* Semibold für aktive Links */
+}
+
+/* Inactive Navigation */
+.nav-link-inactive,
+.nav-link:not(.active) {
+    font-weight: 500 !important; /* Medium für inaktive Links */
+}
+
+/* Help & Logout Links */
+.mt-auto a,
+.mt-auto button {
+    font-size: 0.875rem !important; /* 14px */
+    font-weight: 500 !important;
+}
+
+/* ============================================
+   PAGE TITLES - EINHEITLICH
+   ============================================ */
+h1 {
+    font-size: 1.875rem !important; /* 30px desktop */
+    font-weight: 700 !important;
+    line-height: 2.25rem !important;
+}
+
+@media (max-width: 640px) {
+    h1 {
+        font-size: 1.5rem !important; /* 24px mobile */
+        line-height: 2rem !important;
+    }
+}
+
+/* ============================================
+   BUTTONS - EINHEITLICH
+   ============================================ */
+.button_primary,
+.button_secondary,
+button[class*="button"] {
+    font-size: 0.875rem !important; /* 14px */
+    font-weight: 600 !important;
+    line-height: 1.25rem !important;
+}
+
+/* ============================================
+   TABLES - EINHEITLICH
+   ============================================ */
+th {
+    font-size: 0.75rem !important; /* 12px */
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+td {
+    font-size: 0.875rem !important; /* 14px */
+    font-weight: 400 !important;
+}
+
+/* ============================================
+   CARDS & CONTENT - EINHEITLICH
+   ============================================ */
+.card h2,
+.content-wrapper h2 {
+    font-size: 1.25rem !important; /* 20px */
+    font-weight: 700 !important;
+    line-height: 1.75rem !important;
+}
+
+@media (max-width: 640px) {
+    .card h2,
+    .content-wrapper h2 {
+        font-size: 1.125rem !important; /* 18px */
+        line-height: 1.5rem !important;
+    }
+}
+
+/* ============================================
+   FORM ELEMENTS - EINHEITLICH
+   ============================================ */
+label {
+    font-size: 0.875rem !important; /* 14px */
+    font-weight: 500 !important;
+    line-height: 1.25rem !important;
+}
+
+input,
+select,
+textarea {
+    font-size: 0.875rem !important; /* 14px */
+    font-family: inherit !important;
+}
+
+/* ============================================
+   KLEINE TEXT-ELEMENTE - EINHEITLICH
+   ============================================ */
+small,
+.text-xs {
+    font-size: 0.75rem !important; /* 12px */
+}
+
+.text-sm {
+    font-size: 0.875rem !important; /* 14px */
+}
+
+.text-base {
+    font-size: 1rem !important; /* 16px */
+}
+
+.text-lg {
+    font-size: 1.125rem !important; /* 18px */
+}
+
+.text-xl {
+    font-size: 1.25rem !important; /* 20px */
+}
+
+.text-2xl {
+    font-size: 1.5rem !important; /* 24px */
+}
+
+.text-3xl {
+    font-size: 1.875rem !important; /* 30px */
+}
+
+/* ============================================
+   FONT WEIGHTS - EINHEITLICH
+   ============================================ */
+.font-normal { font-weight: 400 !important; }
+.font-medium { font-weight: 500 !important; }
+.font-semibold { font-weight: 600 !important; }
+.font-bold { font-weight: 700 !important; }
+.font-extrabold { font-weight: 800 !important; }
+
+/* ============================================
+   SIDEBAR SPEZIFISCH - ABSOLUT EINHEITLICH
+   ============================================ */
+#sidebar {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+#sidebar * {
+    font-family: inherit !important;
+}
+
+/* Logo Container - immer gleich */
+#sidebar .flex.items-center.justify-center.mb-10 img {
+    height: 5rem !important; /* 80px */
+    max-height: 5rem !important;
+    width: auto !important;
+}
+
+/* User Profile Container - immer gleich */
+#sidebar .mb-6.p-4 {
+    padding: 1rem !important;
+}
+
+/* Navigation Container - immer gleich */
+#sidebar nav {
+    gap: 0.5rem !important;
+}
+
+/* Navigation Links Padding - immer gleich */
+#sidebar nav a {
+    padding: 0.625rem 1rem !important;
+}
+
+/* ============================================
+   OVERRIDE PROBLEMATISCHE STYLES
+   ============================================ */
+
+/* Entfernen Sie alle inline font-size Styles */
+[style*="font-size"] {
+    font-size: inherit !important;
+}
+
+/* Stelle sicher, dass keine Seite die Basis-Schriftart überschreibt */
+body[style*="font-family"] {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}

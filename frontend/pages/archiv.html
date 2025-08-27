@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Archiv - SBV Professional</title>
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link as="style" href="https://fonts.googleapis.com/css2?display=swap&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" onload="this.rel='stylesheet'" rel="stylesheet"/>
+    <link rel="stylesheet" href="../assets/css/responsive-framework.css">
+    <link rel="stylesheet" href="../assets/css/sidebar-preload.css">
+    <!-- Master Typography - MUSS als LETZTE CSS Datei kommen -->
+    <link rel="stylesheet" href="../assets/css/master-typography.css">
+    <!-- Load unified sidebar component -->
+    <script src="../assets/js/fix-user-consistency.js"></script>
+    <script src="../assets/js/smooth-navigation.js"></script>
+    <script src="../assets/js/sidebar-component.js"></script>
+    <!-- Mobile Menu Final Solution -->
+    <script src="../assets/js/mobile-menu-final.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style type="text/tailwindcss">
+        :root {
+            --color-primary: #A4D2F4;
+            --color-secondary: #6BAF38;
+            --color-danger: #ef4444;
+            --color-warning: #f59e0b;
+            --color-success: #10b981;
+            --color-text-primary: #111827;
+            --color-text-secondary: #6B7280;
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f3f4f6;
+            --color-card-background: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-red: #DC2626;
+            --color-black: #000000;
+            --color-light-blue: #A4D2F4;
+            --color-green: #6BAF38;
+            --color-background: #F8FAFC;
+            --color-orange: #F59E0B;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .button_primary {
+            @apply bg-[var(--color-light-blue)] text-[var(--color-black)] rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-opacity-80 transition-colors;
+        }
+        .button_secondary {
+            @apply bg-[var(--color-secondary)] text-white rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-opacity-80 transition-colors;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 1rem;
+            border-radius: 9999px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .nav-link-active {
+            background-color: rgba(164, 210, 244, 0.3);
+            color: var(--color-black);
+            font-weight: 600;
+        }
+        .nav-link-inactive {
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+        .nav-link-inactive:hover {
+            background-color: #f3f4f6;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-[var(--color-background)]">
+    <!-- Mobile Menu Button (Schwebend) -->
+    <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+    
+    <div class="app-wrapper">
+        <div class="app-container">
+            <!-- Mobile Overlay -->
+            <div id="mobile-overlay" class="sidebar-overlay"></div>
+            
+            <!-- SBV Navigation Sidebar -->
+            <aside id="sidebar" class="app-sidebar bg-[var(--color-card-background)] shadow-lg flex flex-col p-6">
+            <!-- Sidebar content will be loaded by sidebar-component.js -->
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="app-content">
+                <!-- Header -->
+                <div class="content-wrapper">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">Archiv</h1>
+                    </div>
+                    <!-- Upload Buttons -->
+                    <div class="flex gap-3">
+                        <button class="button_secondary flex items-center gap-2" onclick="openGesuchUpload()">
+                            <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                            </svg>
+                            <span>Gesuch hochladen</span>
+                        </button>
+                        <button class="button_primary flex items-center gap-2" onclick="uploadAnhang()">
+                            <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.5,6.5C15.67,6.5 15,7.17 15,8C15,8.83 15.67,9.5 16.5,9.5C17.33,9.5 18,8.83 18,8C18,7.17 17.33,6.5 16.5,6.5M6,2A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6M13,9V4.5L18.5,10H14A1,1 0 0,1 13,9Z"/>
+                            </svg>
+                            <span>Anhang</span>
+                        </button>
+                        <button class="bg-gray-100 text-[var(--color-text-primary)] rounded-full px-6 py-2.5 text-sm font-bold hover:bg-gray-200 transition-colors flex items-center gap-2" onclick="uploadDokument()">
+                            <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9,2A2,2 0 0,0 7,4V20A2,2 0 0,0 9,22H15A2,2 0 0,0 17,20V8L11,2H9M11,9V4.5L16.5,10H12A1,1 0 0,1 11,9Z"/>
+                            </svg>
+                            <span>Dokument</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Working Year Selection -->
+            <div class="px-8 mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="flex-1 max-w-xs">
+                        <label class="block text-sm font-semibold mb-3 text-[var(--color-text-primary)]">Gesuchsjahr</label>
+                        <select class="w-full rounded-lg border py-3 px-4 bg-white border-[var(--color-border)] text-[var(--color-text-primary)]" id="working-year">
+                            <option value="2024" selected>2024</option>
+                        </select>
+                    </div>
+                    <button class="button_secondary mt-6" onclick="createNewYear()">
+                        Jahr auswählen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Annual Archives Section -->
+            <div class="px-8" id="archiveOverview">
+                <h2 class="text-xl sm:text-2xl font-bold mb-6 text-[var(--color-text-primary)]">Jahresarchive</h2>
+                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                    
+                    <!-- 2024 Folder -->
+                    <div class="group flex flex-col items-center text-center gap-2 cursor-pointer transform hover:-translate-y-1 transition-all duration-200" onclick="openArchive('2024')">
+                        <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow bg-[var(--color-light-blue)]">
+                            <svg fill="white" height="28" viewBox="0 0 24 24" width="28" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-[var(--color-text-primary)]">2024</p>
+                        <p class="text-xs text-[var(--color-text-secondary)]">42 Dok.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Archive Documents Table (hidden by default) -->
+            <div class="px-8 hidden" id="archiveDocuments">
+                <div class="flex items-center mb-6">
+                    <button onclick="backToArchiveOverview()" class="flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">
+                        <svg fill="currentColor" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                        Zurück zur Übersicht
+                    </button>
+                </div>
+                
+                <h2 class="text-2xl font-bold mb-6 text-[var(--color-text-primary)]" id="archiveYear">Archiv 2024</h2>
+                
+                <!-- Search and Filter -->
+                <div class="mb-6">
+                    <div class="bg-[var(--color-card-background)] rounded-2xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1">
+                                <input type="text" id="documentSearch" placeholder="Nach Dokumenten suchen..." class="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                            </div>
+                            <select id="documentTypeFilter" class="border border-[var(--color-border)] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                                <option value="">Alle Dokumenttypen</option>
+                                <option value="gesuch">Gesuche</option>
+                                <option value="rapport">Rapporte</option>
+                                <option value="anhang">Anhänge</option>
+                                <option value="dokument">Dokumente</option>
+                            </select>
+                            <select id="monthFilter" class="border border-[var(--color-border)] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                                <option value="">Alle Monate</option>
+                                <option value="01">Januar</option>
+                                <option value="02">Februar</option>
+                                <option value="03">März</option>
+                                <option value="04">April</option>
+                                <option value="05">Mai</option>
+                                <option value="06">Juni</option>
+                                <option value="07">Juli</option>
+                                <option value="08">August</option>
+                                <option value="09">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Dezember</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents Table -->
+                <div class="bg-[var(--color-card-background)] rounded-2xl shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-secondary)]">Dokumentname</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-secondary)]">Typ</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-secondary)]">Teilprojekt</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-secondary)]">Datum</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-secondary)]">Grösse</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-secondary)]">Status</th>
+                                    <th class="px-4 py-3 text-center text-sm font-semibold text-[var(--color-text-secondary)]">Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="documentsTableBody">
+                                <!-- Dynamisch gefüllt -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Load user info and set navigation
+        async function loadUserInfo() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${window.API_BASE_URL || ''}/api/users/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const userResponse = await response.json();
+                    const user = userResponse.user;
+                    
+                    // Display user name
+                    let displayName = 'Benutzer';
+                    if (user.first_name && user.last_name) {
+                        displayName = `${user.first_name} ${user.last_name}`;
+                    } else if (user.name) {
+                        displayName = user.name;
+                    }
+                    
+                    document.getElementById('user-name').textContent = displayName;
+                    
+                    // Set role display
+                    const roleDisplayMap = {
+                        'super_admin': 'Super Administrator',
+                        'admin': 'Administrator', 
+                        'user': 'Nutzer'
+                    };
+                    
+                    const userRole = user.role || 'user';
+                    document.getElementById('user-role').textContent = roleDisplayMap[userRole] || 'Nutzer';
+                } else {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '../login.html';
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                localStorage.removeItem('authToken');
+                window.location.href = '../login.html';
+            }
+        }
+
+        // Upload functions
+        function uploadGesuch() {
+            alert('Gesuch-Upload wird implementiert...');
+        }
+
+        function uploadAnhang() {
+            alert('Anhang-Upload wird implementiert...');
+        }
+
+        function uploadDokument() {
+            alert('Dokument-Upload wird implementiert...');
+        }
+
+        function openArchive(year) {
+            console.log(`🗂️ Öffne Archiv für Jahr: ${year}`);
+            
+            // Hide overview and show documents table
+            document.getElementById('archiveOverview').classList.add('hidden');
+            document.getElementById('archiveDocuments').classList.remove('hidden');
+            
+            // Update year in header
+            document.getElementById('archiveYear').textContent = `Archiv ${year}`;
+            
+            // Load documents for the year
+            loadArchiveDocuments(year);
+        }
+
+        function backToArchiveOverview() {
+            console.log('🔙 Zurück zur Archiv-Übersicht');
+            
+            // Show overview and hide documents table
+            document.getElementById('archiveOverview').classList.remove('hidden');
+            document.getElementById('archiveDocuments').classList.add('hidden');
+        }
+
+        function loadArchiveDocuments(year) {
+            console.log(`📄 Lade Dokumente für Jahr: ${year}`);
+            
+            // Sample documents data for 2024
+            const documents = [
+                {
+                    name: 'TP1_Leitmedien_Gesuch_Q1_2024.pdf',
+                    type: 'gesuch',
+                    teilprojekt: 'TP1 - Leitmedien',
+                    date: '2024-03-15',
+                    size: '2.4 MB',
+                    status: 'genehmigt'
+                },
+                {
+                    name: 'TP1_Leitmedien_Rapport_Q1_2024.pdf',
+                    type: 'rapport',
+                    teilprojekt: 'TP1 - Leitmedien',
+                    date: '2024-04-30',
+                    size: '1.8 MB',
+                    status: 'eingereicht'
+                },
+                {
+                    name: 'TP2_Digitale_Medien_Gesuch_Q1_2024.pdf',
+                    type: 'gesuch',
+                    teilprojekt: 'TP2 - Digitale Medien',
+                    date: '2024-03-12',
+                    size: '1.9 MB',
+                    status: 'genehmigt'
+                },
+                {
+                    name: 'TP3_Messen_Ausstellungen_Anhang_Q2_2024.pdf',
+                    type: 'anhang',
+                    teilprojekt: 'TP3 - Messen & Ausstellungen',
+                    date: '2024-06-20',
+                    size: '3.2 MB',
+                    status: 'archiviert'
+                },
+                {
+                    name: 'TP4_Events_Aktionen_Dokument_Q3_2024.pdf',
+                    type: 'dokument',
+                    teilprojekt: 'TP4 - Events & Aktionen',
+                    date: '2024-09-10',
+                    size: '1.1 MB',
+                    status: 'genehmigt'
+                },
+                {
+                    name: 'TP5_Schulprojekte_Rapport_Q2_2024.pdf',
+                    type: 'rapport',
+                    teilprojekt: 'TP5 - Schulprojekte',
+                    date: '2024-07-15',
+                    size: '2.7 MB',
+                    status: 'eingereicht'
+                },
+                {
+                    name: 'TP6_Partnerprojekte_Gesuch_Q3_2024.pdf',
+                    type: 'gesuch',
+                    teilprojekt: 'TP6 - Partnerprojekte (inkl. KEP)',
+                    date: '2024-08-05',
+                    size: '4.1 MB',
+                    status: 'genehmigt'
+                },
+                {
+                    name: 'Gesamtbericht_2024_Q1-Q3.pdf',
+                    type: 'dokument',
+                    teilprojekt: 'Allgemein',
+                    date: '2024-10-01',
+                    size: '5.6 MB',
+                    status: 'archiviert'
+                }
+            ];
+            
+            displayDocuments(documents);
+        }
+
+        function displayDocuments(documents) {
+            const tbody = document.getElementById('documentsTableBody');
+            
+            tbody.innerHTML = documents.map(doc => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <svg class="w-8 h-8 text-red-600 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                            </svg>
+                            <div>
+                                <div class="text-sm font-medium text-[var(--color-text-primary)]">${doc.name}</div>
+                                <div class="text-sm text-[var(--color-text-secondary)]">PDF-Dokument</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTypeColor(doc.type)}">
+                            ${formatDocumentType(doc.type)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">${doc.teilprojekt}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">${formatDate(doc.date)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">${doc.size}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(doc.status)}">
+                            ${formatStatus(doc.status)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="downloadDocument('${doc.name}')" title="Download">
+                            <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16">
+                                <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                            </svg>
+                        </button>
+                        <button class="text-green-600 hover:text-green-900 mr-3" onclick="viewDocument('${doc.name}')" title="Ansehen">
+                            <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16">
+                                <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                            </svg>
+                        </button>
+                        <button class="text-gray-600 hover:text-gray-900" onclick="archiveDocument('${doc.name}')" title="Archivieren">
+                            <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16">
+                                <path d="M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z"/>
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getTypeColor(type) {
+            const colors = {
+                'gesuch': 'bg-blue-100 text-blue-800',
+                'rapport': 'bg-green-100 text-green-800',
+                'anhang': 'bg-yellow-100 text-yellow-800',
+                'dokument': 'bg-purple-100 text-purple-800'
+            };
+            return colors[type] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'genehmigt': 'bg-green-100 text-green-800',
+                'eingereicht': 'bg-blue-100 text-blue-800',
+                'archiviert': 'bg-gray-100 text-gray-800',
+                'abgelehnt': 'bg-red-100 text-red-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function formatDocumentType(type) {
+            const types = {
+                'gesuch': 'Gesuch',
+                'rapport': 'Rapport',
+                'anhang': 'Anhang',
+                'dokument': 'Dokument'
+            };
+            return types[type] || type;
+        }
+
+        function formatStatus(status) {
+            const statuses = {
+                'genehmigt': 'Genehmigt',
+                'eingereicht': 'Eingereicht',
+                'archiviert': 'Archiviert',
+                'abgelehnt': 'Abgelehnt'
+            };
+            return statuses[status] || status;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('de-CH', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function downloadDocument(filename) {
+            console.log(`📥 Download: ${filename}`);
+            alert(`Download von "${filename}" wird gestartet...`);
+        }
+
+        function viewDocument(filename) {
+            console.log(`👁️ Ansehen: ${filename}`);
+            alert(`Dokument "${filename}" wird geöffnet...`);
+        }
+
+        function archiveDocument(filename) {
+            console.log(`🗂️ Archivieren: ${filename}`);
+            if (confirm(`Möchten Sie "${filename}" wirklich archivieren?`)) {
+                alert(`"${filename}" wurde archiviert.`);
+            }
+        }
+
+        // Gesuch Upload Modal
+        function openGesuchUpload() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <h2 class="text-2xl font-bold mb-4">Gesuch hochladen</h2>
+                    
+                    <form id="gesuchUploadForm" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-2">Jahr</label>
+                            <input type="number" id="gesuchJahr" value="2025" min="2020" max="2030" 
+                                   class="w-full border rounded-lg px-3 py-2" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-2">Titel</label>
+                            <input type="text" id="gesuchTitel" placeholder="z.B. Förderantrag 2025"
+                                   class="w-full border rounded-lg px-3 py-2" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-2">Dokument (PDF/Word)</label>
+                            <input type="file" id="gesuchFile" accept=".pdf,.doc,.docx" 
+                                   class="w-full border rounded-lg px-3 py-2" required>
+                        </div>
+                        
+                        <div id="uploadStatus" class="mb-4 hidden">
+                            <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
+                                <span id="statusText">Dokument wird verarbeitet...</span>
+                            </div>
+                        </div>
+                        
+                        <div id="extractedResults" class="mb-4 hidden">
+                            <h3 class="font-semibold mb-2">Erkannte Teilprojekte:</h3>
+                            <div id="teilprojekteList" class="space-y-2"></div>
+                            <button type="button" onclick="addManualTeilprojekt()" 
+                                    class="mt-2 text-blue-600 hover:underline">+ Teilprojekt hinzufügen</button>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3">
+                            <button type="button" onclick="closeGesuchModal()" 
+                                    class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+                                Abbrechen
+                            </button>
+                            <button type="submit" id="uploadBtn"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Hochladen & Verarbeiten
+                            </button>
+                            <button type="button" id="createRapporteBtn" onclick="createRapporte()" 
+                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 hidden">
+                                Rapporte erstellen
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Form submit handler
+            document.getElementById('gesuchUploadForm').onsubmit = function(e) {
+                e.preventDefault();
+                uploadGesuchFile();
+            };
+        }
+        
+        function closeGesuchModal() {
+            const modal = document.querySelector('.fixed.inset-0');
+            if (modal) modal.remove();
+        }
+        
+        let currentGesuchId = null;
+        let currentTeilprojekte = [];
+        
+        async function uploadGesuchFile() {
+            const formData = new FormData();
+            const fileInput = document.getElementById('gesuchFile');
+            
+            formData.append('gesuchFile', fileInput.files[0]);
+            formData.append('jahr', document.getElementById('gesuchJahr').value);
+            formData.append('titel', document.getElementById('gesuchTitel').value);
+            
+            document.getElementById('uploadStatus').classList.remove('hidden');
+            document.getElementById('uploadBtn').disabled = true;
+            
+            try {
+                const response = await fetch(`${window.API_BASE_URL || ''}/api/gesuch/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentGesuchId = data.gesuch.id;
+                    currentTeilprojekte = data.extraction.teilprojekte || [];
+                    showExtractedResults(data.extraction);
+                } else {
+                    alert('Fehler: ' + (data.error || 'Upload fehlgeschlagen'));
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Fehler beim Upload');
+            } finally {
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        }
+        
+        function showExtractedResults(extraction) {
+            document.getElementById('extractedResults').classList.remove('hidden');
+            document.getElementById('uploadBtn').classList.add('hidden');
+            document.getElementById('createRapporteBtn').classList.remove('hidden');
+            
+            const list = document.getElementById('teilprojekteList');
+            list.innerHTML = '';
+            
+            if (!extraction.teilprojekte || extraction.teilprojekte.length === 0) {
+                list.innerHTML = '<p class="text-gray-500">Keine Teilprojekte erkannt. Bitte manuell hinzufügen.</p>';
+            } else {
+                extraction.teilprojekte.forEach((tp, i) => {
+                    list.innerHTML += `
+                        <div class="flex gap-2 items-center p-2 border rounded">
+                            <input type="text" value="${tp.nummer}" class="w-20 border px-2 py-1 rounded" 
+                                   onchange="updateTeilprojekt(${i}, 'nummer', this.value)">
+                            <input type="text" value="${tp.name}" class="flex-1 border px-2 py-1 rounded"
+                                   onchange="updateTeilprojekt(${i}, 'name', this.value)">
+                            <input type="number" value="${tp.budget}" class="w-32 border px-2 py-1 rounded"
+                                   onchange="updateTeilprojekt(${i}, 'budget', this.value)">
+                            <button onclick="removeTeilprojekt(${i})" class="text-red-600 hover:text-red-800">×</button>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('statusText').textContent = `${extraction.teilprojekte?.length || 0} Teilprojekte erkannt`;
+        }
+        
+        function updateTeilprojekt(index, field, value) {
+            if (currentTeilprojekte[index]) {
+                currentTeilprojekte[index][field] = value;
+            }
+        }
+        
+        function removeTeilprojekt(index) {
+            currentTeilprojekte.splice(index, 1);
+            showExtractedResults({ teilprojekte: currentTeilprojekte });
+        }
+        
+        function addManualTeilprojekt() {
+            currentTeilprojekte.push({
+                nummer: `TP${currentTeilprojekte.length + 1}`,
+                name: 'Neues Teilprojekt',
+                budget: 0
+            });
+            showExtractedResults({ teilprojekte: currentTeilprojekte });
+        }
+        
+        async function createRapporte() {
+            if (!currentGesuchId) {
+                alert('Kein Gesuch ausgewählt');
+                return;
+            }
+            
+            if (currentTeilprojekte.length === 0) {
+                alert('Keine Teilprojekte vorhanden');
+                return;
+            }
+            
+            if (!confirm(`Möchten Sie ${currentTeilprojekte.length} Rapporte erstellen?`)) {
+                return;
+            }
+            
+            try {
+                // Erst Teilprojekte speichern
+                await fetch(`${window.API_BASE_URL || ''}/api/gesuch/${currentGesuchId}/teilprojekte`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({ teilprojekte: currentTeilprojekte })
+                });
+                
+                // Dann Rapporte erstellen
+                const response = await fetch(`${window.API_BASE_URL || ''}/api/gesuch/${currentGesuchId}/create-rapporte`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    closeGesuchModal();
+                    setTimeout(() => {
+                        window.location.href = '/pages/rapport.html';
+                    }, 1000);
+                } else {
+                    alert('Fehler: ' + (data.error || 'Rapporte konnten nicht erstellt werden'));
+                }
+            } catch (error) {
+                console.error('Error creating rapporte:', error);
+                alert('Fehler beim Erstellen der Rapporte');
+            }
+        }
+
+        function createNewYear() {
+            const selectedYear = document.getElementById('working-year').value;
+            if (confirm(`Möchten Sie ein neues Archiv für das Jahr ${selectedYear} erstellen?`)) {
+                alert(`Archiv für ${selectedYear} wird erstellt...`);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '../login.html';
+        }
+
+        // Setup mobile menu functionality
+        function setupMobileMenu() {
+            const toggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            if (toggle && sidebar && overlay) {
+                toggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                    document.body.classList.toggle('sidebar-open');
+                });
+                
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.classList.remove('sidebar-open');
+                });
+                
+                // Close mobile menu when clicking on a nav link
+                sidebar.addEventListener('click', (e) => {
+                    if (e.target.closest('.nav-link')) {
+                        if (window.innerWidth < 1024) { // lg breakpoint
+                            sidebar.classList.remove('active');
+                            overlay.classList.remove('active');
+                            document.body.classList.remove('sidebar-open');
+                        }
+                    }
+                });
+                
+                // Close sidebar on resize to desktop
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth >= 1024) {
+                        sidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                        document.body.classList.remove('sidebar-open');
+                    }
+                });
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize unified sidebar
+            initializeSidebar('archiv');
+            
+            // Legacy functions (now handled by sidebar-component.js)
+            // setupMobileMenu();
+            // loadUserInfo();
+        });
+    </script>
+    
+    <!-- DEMO Gesuch Upload Script -->
+    <script src="../js/demo-gesuch.js"></script>
+</body>
+</html>

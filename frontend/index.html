@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SBV Professional - Dashboard</title>
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" onload="this.rel='stylesheet'" rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/css/swiss-design.css">
+    <link rel="stylesheet" href="/assets/css/responsive-improvements.css">
+    <link rel="stylesheet" href="/assets/css/responsive-framework.css">
+    <link rel="stylesheet" href="/assets/css/sidebar-preload.css">
+    <!-- Master Typography - MUSS als LETZTE CSS Datei kommen -->
+    <link rel="stylesheet" href="/assets/css/master-typography.css">
+    
+    <!-- API Konfiguration -->
+    <script src="js/config.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script src="/assets/js/tailwind-config.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+        /* Critical CSS for proper display */
+        /* Logo standardized in sidebar-component.js */
+    </style>
+    <style type="text/tailwindcss">
+        :root {
+            --color-primary: #A4D2F4;
+            --color-secondary: #6BAF38;
+            --color-danger: #ef4444;
+            --color-warning: #f59e0b;
+            --color-success: #10b981;
+            --color-text-primary: #111827;
+            --color-text-secondary: #6B7280;
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f3f4f6;
+            --color-card-background: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-red: #DC2626;
+            --color-black: #000000;
+            --color-light-blue: #A4D2F4;
+            --color-green: #6BAF38;
+            --color-background: #F8FAFC;
+            --color-orange: #F59E0B;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .button_primary {
+            @apply bg-[var(--color-light-blue)] text-[var(--color-black)] rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-opacity-80 transition-colors;
+        }
+        .button_secondary {
+            @apply bg-gray-100 text-[var(--color-text-primary)] rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-gray-200 transition-colors;
+        }
+    </style>
+</head>
+<body class="bg-[var(--color-background)]">
+    <!-- Mobile Menu Button (Schwebend) -->
+    <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+    
+    <div class="app-wrapper">
+        <div class="app-container">
+            <!-- Mobile Overlay -->
+            <div id="mobile-overlay" class="sidebar-overlay"></div>
+        
+            <!-- SBV Navigation Sidebar -->
+            <aside id="sidebar" class="app-sidebar bg-[var(--color-card-background)] shadow-lg flex flex-col p-6">
+            <!-- Sidebar content will be loaded by sidebar-component.js -->
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="app-content" id="main-content">
+            <!-- Dynamic Content wird hier geladen -->
+            <div class="h-full" id="page-content">
+                <!-- Dashboard Content (Initial) -->
+                <div id="dashboard-content" class="content-wrapper">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-6 sm:mb-8">SBV Dashboard</h1>
+                    
+                    <!-- Statistics Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div class="bg-[var(--color-card-background)] rounded-2xl shadow-sm p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-[var(--color-text-secondary)]">Offene Rapporte</p>
+                                    <p class="text-3xl font-bold text-[var(--color-text-primary)]" id="offene-rapporte">-</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2 2H5V5h14v14H19zm0-16H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-[var(--color-card-background)] rounded-2xl shadow-sm p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-[var(--color-text-secondary)]">Archivierte Dokumente</p>
+                                    <p class="text-3xl font-bold text-[var(--color-text-primary)]" id="archivierte-dokumente">-</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-[var(--color-card-background)] rounded-2xl shadow-sm p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-[var(--color-text-secondary)]">Hochgeladene PDFs</p>
+                                    <p class="text-3xl font-bold text-[var(--color-text-primary)]" id="hochgeladene-pdfs">-</p>
+                                </div>
+                                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                    <!-- Recent Activity & Notifications Layout -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Recent Activity (Takes 2 columns on large screens) -->
+                        <section class="col-span-1 lg:col-span-2 bg-[var(--color-card-background)] rounded-2xl shadow-sm p-4 sm:p-6">
+                            <h2 class="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] mb-4">Letzte Aktivitäten</h2>
+                            <div class="table-responsive">
+                                <table class="w-full text-left table-stack-mobile">  
+                                    <thead>
+                                        <tr class="border-b border-[var(--color-border)]">
+                                            <th class="py-3 px-4 text-sm font-semibold text-[var(--color-text-secondary)]">Datum</th>
+                                            <th class="py-3 px-4 text-sm font-semibold text-[var(--color-text-secondary)]">Typ</th>
+                                            <th class="py-3 px-4 text-sm font-semibold text-[var(--color-text-secondary)]">Beschreibung</th>
+                                            <th class="py-3 px-4 text-sm font-semibold text-[var(--color-text-secondary)] text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recent-activities">
+                                        <!-- Aktivitäten werden dynamisch geladen -->
+                                        <tr>
+                                            <td colspan="4" class="py-4 px-4 text-center text-gray-500">
+                                                <div class="flex items-center justify-center">
+                                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Lade aktuelle Aktivitäten...
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <!-- Notifications & Quick Actions Sidebar -->
+                        <aside class="col-span-1 space-y-4 lg:space-y-8">
+                            <!-- Notifications -->
+                            <div class="bg-[var(--color-card-background)] rounded-2xl shadow-sm p-4 sm:p-6">
+                                <h2 class="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] mb-4">Benachrichtigungen</h2>
+                                <div class="space-y-4">
+                                    <div class="flex items-start gap-4 p-4 rounded-lg bg-blue-50">
+                                        <div class="flex-shrink-0 size-8 flex items-center justify-center rounded-full bg-[var(--color-light-blue)] text-[var(--color-black)]">
+                                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-sm text-[var(--color-text-primary)]">Deadline für Projektbericht naht</p>
+                                            <p class="text-xs text-[var(--color-text-secondary)]">22.07.2025</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start gap-4 p-4 rounded-lg bg-green-50">
+                                        <div class="flex-shrink-0 size-8 flex items-center justify-center rounded-full bg-[var(--color-green)] text-white">
+                                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15h14a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-sm text-[var(--color-text-primary)]">Neues Gesuch vom Standortleiter</p>
+                                            <p class="text-xs text-[var(--color-text-secondary)]">21.07.2025</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="bg-[var(--color-card-background)] rounded-2xl shadow-sm p-4 sm:p-6">
+                                <h2 class="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] mb-4">Schnellaktionen</h2>
+                                <div class="flex flex-col gap-3">
+                                    <button class="button_secondary" onclick="window.location.href='pages/rapport.html'">Neuen Rapport erstellen</button>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Load unified sidebar component -->
+    <script src="/assets/js/fix-user-consistency.js"></script>
+    <script src="/assets/js/smooth-navigation.js"></script>
+    <script src="/assets/js/sidebar-component.js"></script>
+    <!-- Mobile Menu Final Solution -->
+    <script src="/assets/js/mobile-menu-final.js"></script>
+    <script src="/js/config.js"></script>
+    <script>
+        // Check authentication and setup navigation
+        async function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {  
+                window.location.href = 'login.html';
+                return false;
+            }
+            
+            // Verify token is valid by trying to load user info
+            try {
+                const apiUrl = window.API_BASE_URL || '';
+                const response = await fetch(`${apiUrl}/api/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    // Token is invalid
+                    localStorage.removeItem('authToken');
+                    window.location.href = 'login.html';
+                    return false;
+                }
+                
+                // Token is valid, load user info
+                await loadUserInfo();
+                return true;
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('authToken');
+                window.location.href = 'login.html';
+                return false;
+            }
+        }
+        
+        // Load user information from API
+        async function loadUserInfo() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const apiUrl = window.API_BASE_URL || '';
+                const response = await fetch(`${apiUrl}/api/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.status === 401) {
+                    // Token is invalid or expired - only logout on 401
+                    localStorage.removeItem('authToken');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                if (!response.ok) {
+                    // Other errors (500, 503, etc) - don't logout
+                    console.error('Server error:', response.status);
+                    return;
+                }
+                
+                const userResponse = await response.json();
+                const user = userResponse.user; // API returns {user: {...}}
+                
+                // Use first_name/last_name if available, otherwise fall back to name, otherwise 'Benutzer'
+                let displayName = 'Benutzer';
+                if (user.first_name && user.last_name) {
+                    displayName = `${user.first_name} ${user.last_name}`;
+                } else if (user.name) {
+                    displayName = user.name;
+                }
+                
+                document.getElementById('user-name').textContent = displayName;
+                
+                // Set role display
+                const roleDisplayMap = {
+                    'super_admin': 'Super Administrator',
+                    'admin': 'Administrator', 
+                    'user': 'Nutzer'
+                };
+                
+                const userRole = user.role || 'user';
+                document.getElementById('user-role').textContent = roleDisplayMap[userRole] || 'Nutzer';
+                
+                // Build navigation based on role
+                buildNavigationForRole(userRole);
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                // Network error - don't logout, just log the error
+                // User might be offline temporarily
+                // Only logout on actual 401 responses, not network errors
+            }
+        }
+        
+        // Build navigation menu based on user role
+        function buildNavigationForRole(role) {
+            const navMenu = document.getElementById('nav-menu');
+            navMenu.innerHTML = '';
+            
+            // Define navigation items for each role
+            const navigationItems = {
+                'super_admin': [
+                    {
+                        id: 'dashboard',
+                        label: 'Dashboard',
+                        icon: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z',
+                        href: '/',
+                        active: true
+                    },
+                    {
+                        id: 'rapport', 
+                        label: 'Rapport',
+                        icon: 'M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2 2H5V5h14v14H19zm0-16H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z',
+                        href: 'pages/rapport.html'
+                    },
+                    {
+                        id: 'archiv',
+                        label: 'Archiv', 
+                        icon: 'M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z',
+                        href: 'pages/archiv.html'
+                    },
+                    {
+                        id: 'einstellungen',
+                        label: 'Einstellungen',
+                        icon: 'M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z',
+                        href: 'pages/einstellungen.html'
+                    }
+                ],
+                'admin': [
+                    {
+                        id: 'dashboard',
+                        label: 'Dashboard', 
+                        icon: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z',
+                        href: '/',
+                        active: true
+                    },
+                    {
+                        id: 'rapport',
+                        label: 'Rapport',
+                        icon: 'M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2 2H5V5h14v14H19zm0-16H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z',
+                        href: 'pages/rapport.html'
+                    },
+                    {
+                        id: 'archiv',
+                        label: 'Archiv',
+                        icon: 'M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z',
+                        href: 'pages/archiv.html'
+                    },
+                    {
+                        id: 'einstellungen',
+                        label: 'Einstellungen',
+                        icon: 'M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z',
+                        href: 'pages/einstellungen.html'
+                    }
+                ],
+                'user': [
+                    {
+                        id: 'dashboard',
+                        label: 'Dashboard',
+                        icon: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z',
+                        href: '/',
+                        active: true
+                    },
+                    {
+                        id: 'rapport',
+                        label: 'Rapport',
+                        icon: 'M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2 2H5V5h14v14H19zm0-16H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z',
+                        href: 'pages/rapport.html'
+                    }
+                ]
+            };
+            
+            const userNavItems = navigationItems[role] || navigationItems['user'];
+            
+            // Create navigation elements
+            userNavItems.forEach(item => {
+                const navLink = document.createElement('a');
+                navLink.className = item.active ? 'nav-link nav-link-active' : 'flex items-center gap-3 px-4 py-2.5 rounded-full nav-link-inactive nav-link';
+                navLink.href = item.href;
+                
+                navLink.innerHTML = `
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="${item.icon}"/>
+                    </svg>
+                    <span>${item.label}</span>
+                `;
+                
+                navMenu.appendChild(navLink);
+            });
+        }
+        
+        // Logout function
+        function logout() {
+            // Clear local session data
+            localStorage.removeItem('authToken');
+            
+            // Redirect to login page
+            window.location.href = 'login.html';
+        }
+        
+        // Helper function to update statistic cards
+        function updateStatCard(cardId, value) {
+            const element = document.getElementById(cardId);
+            if (element) {
+                element.textContent = value || 0;
+                element.classList.add('animate-pulse');
+                setTimeout(() => element.classList.remove('animate-pulse'), 500);
+            }
+        }
+        
+        // Helper function to update activities table
+        function updateActivitiesTable(activities) {
+            const tbody = document.getElementById('recent-activities');
+            if (!tbody) return;
+            
+            if (!activities || activities.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-4 px-4 text-center text-gray-500">
+                            Keine Aktivitäten vorhanden
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = activities.map(activity => {
+                const date = new Date(activity.created_at).toLocaleDateString('de-DE');
+                const statusClass = {
+                    'entwurf': 'bg-gray-100 text-gray-800',
+                    'eingereicht': 'bg-blue-100 text-blue-800',
+                    'in_bearbeitung': 'bg-yellow-100 text-yellow-800',
+                    'genehmigt': 'bg-green-100 text-green-800',
+                    'abgelehnt': 'bg-red-100 text-red-800'
+                }[activity.status] || 'bg-gray-100 text-gray-800';
+                
+                const statusText = {
+                    'entwurf': 'Entwurf',
+                    'eingereicht': 'Eingereicht',
+                    'in_bearbeitung': 'In Bearbeitung',
+                    'genehmigt': 'Genehmigt',
+                    'abgelehnt': 'Abgelehnt'
+                }[activity.status] || 'Unbekannt';
+                
+                return `
+                    <tr class="border-b border-[var(--color-border)] hover:bg-gray-50">
+                        <td class="py-3 px-4 text-sm text-[var(--color-text-primary)]">${date}</td>
+                        <td class="py-3 px-4 text-sm text-[var(--color-text-primary)]">Rapport</td>
+                        <td class="py-3 px-4 text-sm text-[var(--color-text-primary)]">${activity.titel || 'Ohne Titel'}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">
+                                ${statusText}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Show dashboard error state
+        function showDashboardError() {
+            // Update stat cards to show error state
+            updateStatCard('offene-rapporte', '?');
+            updateStatCard('archivierte-dokumente', '?');
+            updateStatCard('hochgeladene-pdfs', '?');
+            
+            // Update activities table
+            const tbody = document.getElementById('recent-activities');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-4 px-4 text-center text-red-500">
+                            ❌ Fehler beim Laden der Dashboard-Daten
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // Initialize page when DOM is ready
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize unified sidebar
+            initializeSidebar('dashboard');
+            
+            // Setup mobile menu
+            setupMobileMenu();
+            
+            // Check authentication first
+            const isAuthenticated = await checkAuth();
+            if (isAuthenticated) {
+                // Load dashboard data if authenticated
+                loadDashboardData();
+            }
+        });
+        
+        // Setup mobile menu functionality
+        function setupMobileMenu() {
+            const toggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            if (toggle && sidebar && overlay) {
+                toggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                    document.body.classList.toggle('sidebar-open');
+                });
+                
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.classList.remove('sidebar-open');
+                });
+                
+                // Close mobile menu when clicking on a nav link
+                sidebar.addEventListener('click', (e) => {
+                    if (e.target.closest('.nav-link')) {
+                        if (window.innerWidth < 1024) { // lg breakpoint
+                            sidebar.classList.remove('active');
+                            overlay.classList.remove('active');
+                            document.body.classList.remove('sidebar-open');
+                        }
+                    }
+                });
+                
+                // Close sidebar on resize to desktop
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth >= 1024) {
+                        sidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                        document.body.classList.remove('sidebar-open');
+                    }
+                });
+            }
+        }
+        
+        // Dashboard Data Loading Functions
+        async function loadDashboardData() {
+            try {
+                console.log('🔄 Loading dashboard data...');
+                
+                // Try to load real data, but show demo data as fallback
+                try {
+                    await Promise.all([
+                        loadDashboardStats(),
+                        loadRecentActivities()
+                    ]);
+                } catch (apiError) {
+                    console.log('⚠️ API failed, showing demo data:', apiError);
+                    showDemoData();
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showDashboardError();
+            }
+        }
+        
+        // Show demo data when API fails
+        function showDemoData() {
+            console.log('📊 Showing demo dashboard data');
+            updateStatCard('offene-rapporte', 3);
+            updateStatCard('archivierte-dokumente', 12);
+            updateStatCard('hochgeladene-pdfs', 8);
+            
+            // Demo activities
+            const demoActivities = [
+                {
+                    id: 1,
+                    titel: 'Demo Rapport - Projektbericht Q1',
+                    status: 'genehmigt',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 2,
+                    titel: 'Wöchentlicher Statusbericht',
+                    status: 'eingereicht',
+                    created_at: new Date(Date.now() - 86400000).toISOString()
+                },
+                {
+                    id: 3,
+                    titel: 'Monatsabschluss Januar',
+                    status: 'entwurf',
+                    created_at: new Date(Date.now() - 172800000).toISOString()
+                }
+            ];
+            
+            updateActivitiesTable(demoActivities);
+        }
+        
+        async function loadDashboardStats() {
+            const token = localStorage.getItem('authToken');
+            if (!token) return;
+            
+            try {
+                // Load Rapporte
+                const apiUrl = window.API_BASE_URL || '';
+                const rapporteResponse = await fetch(`${apiUrl}/api/rapporte`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (rapporteResponse.status === 401) {
+                    // Token expired - redirect to login
+                    localStorage.removeItem('authToken');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                if (!rapporteResponse.ok) {
+                    // Other errors - log but don't logout
+                    console.error('Error loading rapporte:', rapporteResponse.status);
+                    return;
+                }
+                
+                const rapporteResult = await rapporteResponse.json();
+                const rapporte = rapporteResult.rapports || [];
+                
+                // Calculate statistics
+                const offeneRapporte = rapporte.filter(r => r.status === 'eingereicht').length;
+                const archivierteRapporte = rapporte.filter(r => r.status === 'genehmigt').length;
+                const hochgeladenePdfs = rapporte.filter(r => r.uploaded_file).length;
+                const berichteAnzahl = rapporte.length;
+                
+                // Update dashboard cards
+                updateStatCard('offene-rapporte', offeneRapporte);
+                updateStatCard('archivierte-dokumente', archivierteRapporte);
+                updateStatCard('hochgeladene-pdfs', hochgeladenePdfs);
+                
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
+        }
+        
+        async function loadRecentActivities() {
+            const token = localStorage.getItem('authToken');
+            if (!token) return;
+            
+            try {
+                const apiUrl = window.API_BASE_URL || '';
+                const response = await fetch(`${apiUrl}/api/rapporte`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401) {
+                    // Token expired - redirect to login
+                    localStorage.removeItem('authToken');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                if (!response.ok) {
+                    // Other errors - log but don't logout
+                    console.error('Error loading recent activities:', response.status);
+                    return;
+                }
+                
+                const result = await response.json();
+                const rapporte = result.rapports || [];
+                
+                // Sort by created_at (newest first) and take top 5
+                const recentRapporte = rapporte
+                    .filter(r => r.created_at)
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                    .slice(0, 5);
+                
+                updateActivitiesTable(recentRapporte);
+                
+            } catch (error) {
+                console.error('Error loading recent activities:', error);
+            }
+        }
+        
+        function updateStatCard(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = value;
+                element.style.opacity = '0';
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                }, 100);
+            }
+        }
+        
+        function updateActivitiesTable(rapporte) {
+            const tbody = document.getElementById('recent-activities');
+            if (!tbody) return;
+            
+            if (rapporte.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-4 px-4 text-center text-gray-500">
+                            Keine aktuellen Aktivitäten gefunden
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = rapporte.map(rapport => {
+                const datum = new Date(rapport.created_at).toLocaleDateString('de-CH');
+                const typ = 'Rapport';
+                const beschreibung = rapport.title || 'Ohne Titel';
+                const statusInfo = getStatusInfo(rapport.status);
+                
+                return `
+                    <tr class="border-b border-[var(--color-border)]">
+                        <td class="py-4 px-4 text-[var(--color-text-primary)]" data-label="Datum">${datum}</td>
+                        <td class="py-4 px-4 text-[var(--color-text-primary)]" data-label="Typ">${typ}</td>
+                        <td class="py-4 px-4 text-[var(--color-text-primary)]" data-label="Beschreibung">${beschreibung}</td>
+                        <td class="py-4 px-4 text-center" data-label="Status">
+                            <span class="inline-block px-3 py-1 text-sm font-medium ${statusInfo.class} rounded-full">
+                                ${statusInfo.text}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function getStatusInfo(status) {
+            switch(status) {
+                case 'eingereicht':
+                    return { class: 'text-yellow-800 bg-yellow-100', text: 'Eingereicht' };
+                case 'genehmigt':
+                    return { class: 'text-green-800 bg-green-100', text: 'Genehmigt' };
+                case 'abgelehnt':
+                    return { class: 'text-red-800 bg-red-100', text: 'Abgelehnt' };
+                case 'entwurf':
+                    return { class: 'text-gray-800 bg-gray-100', text: 'Entwurf' };
+                default:
+                    return { class: 'text-blue-800 bg-blue-100', text: 'In Bearbeitung' };
+            }
+        }
+        
+        function showDashboardError() {
+            const statsCards = document.querySelectorAll('[id$="-rapporte"], [id$="-pdfs"], [id$="-anzahl"], [id$="-dokumente"]');
+            statsCards.forEach(card => {
+                card.textContent = '⚠️';
+                card.title = 'Fehler beim Laden der Daten';
+            });
+        }
+    </script>
+    
+    <!-- Load JavaScript modules -->
+    <script type="module" src="/js/notifications.js"></script>
+    <script type="module" src="/js/modal.js"></script>
+    <script type="module" src="/js/dashboard.js"></script>
+</body>
+</html>

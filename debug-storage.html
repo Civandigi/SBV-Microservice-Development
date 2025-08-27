@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Storage</title>
+</head>
+<body>
+    <h1>Debug Browser Storage</h1>
+    <button onclick="clearAll()">Clear All Storage</button>
+    <pre id="output"></pre>
+    
+    <script>
+        // Show all localStorage items
+        const output = document.getElementById('output');
+        let text = "=== localStorage ===\n";
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            text += `${key}: ${value}\n`;
+        }
+        
+        text += "\n=== sessionStorage ===\n";
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            const value = sessionStorage.getItem(key);
+            text += `${key}: ${value}\n`;
+        }
+        
+        output.textContent = text;
+        
+        function clearAll() {
+            localStorage.clear();
+            sessionStorage.clear();
+            alert('All storage cleared! Reload the app now.');
+            location.reload();
+        }
+    </script>
+</body>
+</html>

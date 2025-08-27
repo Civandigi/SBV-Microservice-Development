@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+database.sqlite
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Uploads
+uploads/
+temp/
+
+# Build
+dist/
+build/
+
+# Testing
+coverage/
+.nyc_output
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# Misc
+backend/src/nul
+nul

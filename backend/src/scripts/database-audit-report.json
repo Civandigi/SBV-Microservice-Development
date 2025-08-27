@@ -1,0 +1,66 @@
+{
+  "timestamp": "2025-08-06T07:11:07.931Z",
+  "tables": {
+    "activity_logs": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE activity_logs (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,\n                    action VARCHAR(100) NOT NULL,\n                    resource_type VARCHAR(50),\n                    resource_id INTEGER,\n                    details TEXT,\n                    ip_address VARCHAR(45),\n                    user_agent TEXT,\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP\n                )"
+    },
+    "comments": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE comments (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    rapport_id INTEGER REFERENCES rapporte(id) ON DELETE CASCADE,\n                    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,\n                    content TEXT NOT NULL,\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP\n                )"
+    },
+    "documents": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE documents (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    rapport_id INTEGER REFERENCES rapporte(id) ON DELETE CASCADE,\n                    filename VARCHAR(255) NOT NULL,\n                    original_name VARCHAR(255) NOT NULL,\n                    file_size INTEGER,\n                    mime_type VARCHAR(100),\n                    file_data BLOB NOT NULL,\n                    uploaded_by INTEGER REFERENCES users(id) ON DELETE CASCADE,\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP\n                )"
+    },
+    "gesuche": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE gesuche (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    jahr INTEGER NOT NULL,\n                    titel VARCHAR(500) NOT NULL,\n                    beschreibung TEXT,\n                    status VARCHAR(50) DEFAULT 'entwurf' CHECK (status IN ('entwurf', 'eingereicht', 'genehmigt', 'abgelehnt')),\n                    erstellt_von INTEGER REFERENCES users(id) ON DELETE CASCADE,\n                    genehmigt_von INTEGER,\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n                    eingereicht_am DATETIME,\n                    genehmigt_am DATETIME,\n                    UNIQUE(jahr)\n                )"
+    },
+    "jahresvergleich": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE jahresvergleich (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    gesuch_id INTEGER REFERENCES gesuche(id) ON DELETE CASCADE,\n                    kategorie VARCHAR(255) NOT NULL,\n                    vorjahr DECIMAL(15,2) NOT NULL,\n                    aktuell DECIMAL(15,2) NOT NULL,\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP\n                )"
+    },
+    "k_ziele": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE k_ziele (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    gesuch_id INTEGER REFERENCES gesuche(id) ON DELETE CASCADE,\n                    bezeichnung VARCHAR(255) NOT NULL,\n                    wert DECIMAL(15,2) NOT NULL,\n                    einheit VARCHAR(50) NOT NULL,\n                    typ VARCHAR(50) CHECK (typ IN ('quantitativ', 'qualitativ', 'finanziell')),\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP\n                )"
+    },
+    "massnahmen": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE massnahmen (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    teilprojekt_id INTEGER REFERENCES teilprojekte(id) ON DELETE CASCADE,\n                    titel VARCHAR(255) NOT NULL,\n                    beschreibung TEXT,\n                    ist_erfuellt BOOLEAN DEFAULT 0,\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP\n                )"
+    },
+    "rapporte": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE rapporte (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    datum DATE,\n                    titel VARCHAR(500) NOT NULL,\n                    beschreibung TEXT,\n                    arbeitszeit DECIMAL(5,2),\n                    abteilung VARCHAR(100),\n                    k_ziele_beitraege TEXT,\n                    herausforderungen TEXT,\n                    status VARCHAR(50) DEFAULT 'entwurf' CHECK (status IN ('entwurf', 'eingereicht', 'in_bearbeitung', 'fertig', 'genehmigt', 'abgelehnt')),\n                    priority VARCHAR(20) DEFAULT 'normal' CHECK (priority IN ('niedrig', 'normal', 'hoch', 'kritisch')),\n                    category VARCHAR(100),\n                    author_id INTEGER REFERENCES users(id) ON DELETE CASCADE,\n                    assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL,\n                    approved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,\n                    teilprojekt_id INTEGER,\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n                    submitted_at DATETIME,\n                    approved_at DATETIME,\n                    rejection_reason TEXT\n                )"
+    },
+    "sqlite_sequence": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE sqlite_sequence(name,seq)"
+    },
+    "teilprojekte": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE teilprojekte (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    gesuch_id INTEGER REFERENCES gesuche(id) ON DELETE CASCADE,\n                    nummer INTEGER NOT NULL,\n                    name VARCHAR(255) NOT NULL,\n                    beschreibung TEXT,\n                    budget DECIMAL(12,2),\n                    start_datum DATE,\n                    end_datum DATE,\n                    zielgruppe VARCHAR(255),\n                    verantwortlicher INTEGER REFERENCES users(id),\n                    status VARCHAR(50) DEFAULT 'offen' CHECK (status IN ('offen', 'genehmigt', 'abgelehnt')),\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP\n                )"
+    },
+    "users": {
+      "columns": [],
+      "rowCount": 0,
+      "createSQL": "CREATE TABLE users (\n                    id INTEGER PRIMARY KEY AUTOINCREMENT,\n                    email VARCHAR(255) UNIQUE NOT NULL,\n                    name VARCHAR(255) NOT NULL,\n                    first_name VARCHAR(255),\n                    last_name VARCHAR(255),\n                    password_hash VARCHAR(255) NOT NULL,\n                    role VARCHAR(50) DEFAULT 'user' CHECK (role IN ('user', 'admin', 'super_admin')),\n                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n                    is_active BOOLEAN DEFAULT 1,\n                    last_login DATETIME,\n                    login_attempts INTEGER DEFAULT 0,\n                    locked_until DATETIME\n                )"
+    }
+  },
+  "duplicates": [],
+  "issues": [
+    "Tabelle comments wird nicht im Code verwendet",
+    "Tabelle sqlite_sequence wird nicht im Code verwendet"
+  ],
+  "recommendations": []
+}

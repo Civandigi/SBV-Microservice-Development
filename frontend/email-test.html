@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Mail System Test & Vorschau - SBV Professional V2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .email-preview {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">📧 E-Mail System Test & Vorschau</h1>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">So funktioniert das E-Mail-System:</h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li><strong>Nodemailer</strong> wird für den E-Mail-Versand verwendet</li>
+                                    <li>SMTP-Konfiguration erfolgt über <strong>.env</strong> Datei</li>
+                                    <li>Wenn kein SMTP konfiguriert ist, werden E-Mails nur geloggt (nicht gesendet)</li>
+                                    <li>Alle E-Mail-Templates sind als HTML gespeichert</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Service Configuration Status -->
+                <div class="bg-white border rounded-lg p-4 mb-6">
+                    <h2 class="text-lg font-semibold mb-3">🔧 E-Mail Service Konfiguration</h2>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Service Type:</span>
+                            <code class="bg-gray-100 px-2 py-1 rounded font-semibold" id="service-type">Prüfe...</code>
+                        </div>
+                        <div class="flex justify-between" id="mailgun-config" style="display: none;">
+                            <span class="text-gray-600">Mailgun Domain:</span>
+                            <code class="bg-gray-100 px-2 py-1 rounded" id="mailgun-domain">-</code>
+                        </div>
+                        <div class="flex justify-between" id="mailgun-region" style="display: none;">
+                            <span class="text-gray-600">Mailgun Region:</span>
+                            <code class="bg-gray-100 px-2 py-1 rounded" id="mailgun-region-value">-</code>
+                        </div>
+                        <div class="flex justify-between" id="smtp-config" style="display: none;">
+                            <span class="text-gray-600">SMTP Host:</span>
+                            <code class="bg-gray-100 px-2 py-1 rounded" id="smtp-host">-</code>
+                        </div>
+                        <div class="flex justify-between" id="smtp-port-config" style="display: none;">
+                            <span class="text-gray-600">SMTP Port:</span>
+                            <code class="bg-gray-100 px-2 py-1 rounded" id="smtp-port">-</code>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Von E-Mail:</span>
+                            <code class="bg-gray-100 px-2 py-1 rounded" id="email-from">-</code>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Status:</span>
+                            <span id="email-status" class="px-2 py-1 rounded text-xs font-medium">Prüfe...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Instructions -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">So aktivieren Sie E-Mail-Versand:</h3>
+                            <div class="mt-2 text-sm text-yellow-700">
+                                <h4 class="font-semibold mb-2">Option 1: Mailgun (Empfohlen ✨)</h4>
+                                <ol class="list-decimal list-inside space-y-1 mb-4">
+                                    <li>Account auf <a href="https://mailgun.com" target="_blank" class="underline">mailgun.com</a> erstellen (EU Region wählen!)</li>
+                                    <li>API Key und Domain von Mailgun Dashboard kopieren</li>
+                                    <li>In <code class="bg-yellow-100 px-1">.env</code> eintragen:
+                                        <pre class="mt-2 bg-yellow-100 p-2 rounded text-xs">EMAIL_SERVICE=mailgun
+MAILGUN_API_KEY=key-xxxxxxxxxxxxx
+MAILGUN_DOMAIN=sandboxxxxx.mailgun.org
+MAILGUN_FROM="SBV Professional" &lt;noreply@mg.domain.ch&gt;
+MAILGUN_EU=true</pre>
+                                    </li>
+                                </ol>
+                                
+                                <h4 class="font-semibold mb-2">Option 2: SMTP (Alternative)</h4>
+                                <ol class="list-decimal list-inside space-y-1">
+                                    <li>SMTP-Zugangsdaten von Ihrem Provider</li>
+                                    <li>In <code class="bg-yellow-100 px-1">.env</code> eintragen:
+                                        <pre class="mt-2 bg-yellow-100 p-2 rounded text-xs">EMAIL_SERVICE=smtp
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=ihre-email@gmail.com
+SMTP_PASS=ihr-app-passwort</pre>
+                                    </li>
+                                </ol>
+                                
+                                <p class="mt-3 font-medium">3. Server neu starten mit <code class="bg-yellow-100 px-1">npm restart</code></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Templates Preview -->
+            <div class="space-y-8">
+                <h2 class="text-2xl font-bold text-gray-900">📬 E-Mail Vorlagen</h2>
+
+                <!-- Template 1: Rapport Request -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="bg-blue-600 text-white p-4">
+                        <h3 class="text-lg font-semibold">1. Neue Rapport-Anforderung</h3>
+                        <p class="text-sm opacity-90">Wird gesendet wenn ein Admin einen Rapport anfordert</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-4 text-sm text-gray-600">
+                            <div><strong>An:</strong> user@example.com</div>
+                            <div><strong>Betreff:</strong> Neue Rapport-Anforderung: TP1 - Leitmedien</div>
+                        </div>
+                        <div class="email-preview bg-gray-50 p-6 rounded-lg">
+                            <h2 style="color: #1f2937; font-size: 24px; font-weight: bold;">Neue Rapport-Anforderung</h2>
+                            <p style="color: #4b5563; margin: 16px 0;">Hallo Max Mustermann,</p>
+                            <p style="color: #4b5563; margin: 16px 0;">Sie haben eine neue Rapport-Anforderung erhalten:</p>
+                            
+                            <table style="border: 1px solid #e5e7eb; border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                <tr style="background-color: #f9fafb;">
+                                    <td style="padding: 12px; font-weight: 600; border: 1px solid #e5e7eb;">Teilprojekt:</td>
+                                    <td style="padding: 12px; border: 1px solid #e5e7eb;">TP1 - Leitmedien</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px; font-weight: 600; border: 1px solid #e5e7eb;">Deadline:</td>
+                                    <td style="padding: 12px; color: #dc2626; border: 1px solid #e5e7eb;"><strong>Freitag, 31. Dezember 2024</strong></td>
+                                </tr>
+                                <tr style="background-color: #f9fafb;">
+                                    <td style="padding: 12px; font-weight: 600; border: 1px solid #e5e7eb;">Beschreibung:</td>
+                                    <td style="padding: 12px; border: 1px solid #e5e7eb;">Bitte erstellen Sie den Jahresabschlussbericht für TP1 mit allen KPIs und Budgetauswertungen.</td>
+                                </tr>
+                            </table>
+                            
+                            <p style="color: #1f2937; font-weight: 600; margin: 20px 0;">Bitte erstellen Sie den angeforderten Rapport bis zur angegebenen Deadline.</p>
+                            
+                            <p style="margin: 20px 0;">
+                                <a href="#" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                                    Rapport erstellen
+                                </a>
+                            </p>
+                            
+                            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
+                            <p style="color: #9ca3af; font-size: 12px;">Diese E-Mail wurde automatisch generiert.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Template 2: Deadline Reminder -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="bg-yellow-600 text-white p-4">
+                        <h3 class="text-lg font-semibold">2. Deadline-Erinnerung</h3>
+                        <p class="text-sm opacity-90">Wird 3 Tage vor Deadline automatisch gesendet</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-4 text-sm text-gray-600">
+                            <div><strong>An:</strong> user@example.com</div>
+                            <div><strong>Betreff:</strong> ⚠️ Erinnerung: Rapport-Deadline in 3 Tagen</div>
+                        </div>
+                        <div class="email-preview bg-gray-50 p-6 rounded-lg">
+                            <h2 style="color: #f59e0b; font-size: 24px; font-weight: bold;">⚠️ Deadline-Erinnerung</h2>
+                            <p style="color: #4b5563; margin: 16px 0;">Hallo Max Mustermann,</p>
+                            <p style="color: #1f2937; font-weight: 600; margin: 16px 0;">Ihre Rapport-Deadline läuft in 3 Tagen ab!</p>
+                            
+                            <table style="border: 1px solid #e5e7eb; border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                <tr style="background-color: #f9fafb;">
+                                    <td style="padding: 12px; font-weight: 600; border: 1px solid #e5e7eb;">Teilprojekt:</td>
+                                    <td style="padding: 12px; border: 1px solid #e5e7eb;">TP1 - Leitmedien</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px; font-weight: 600; border: 1px solid #e5e7eb;">Deadline:</td>
+                                    <td style="padding: 12px; color: #f59e0b; border: 1px solid #e5e7eb;"><strong>Freitag, 31. Dezember 2024</strong></td>
+                                </tr>
+                                <tr style="background-color: #f9fafb;">
+                                    <td style="padding: 12px; font-weight: 600; border: 1px solid #e5e7eb;">Beschreibung:</td>
+                                    <td style="padding: 12px; border: 1px solid #e5e7eb;">Bitte erstellen Sie den Jahresabschlussbericht für TP1 mit allen KPIs und Budgetauswertungen.</td>
+                                </tr>
+                            </table>
+                            
+                            <p style="color: #f59e0b; font-weight: 600; margin: 20px 0;">
+                                Bitte erstellen Sie den Rapport umgehend, um die Deadline einzuhalten.
+                            </p>
+                            
+                            <p style="margin: 20px 0;">
+                                <a href="#" style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                                    Jetzt Rapport erstellen
+                                </a>
+                            </p>
+                            
+                            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
+                            <p style="color: #9ca3af; font-size: 12px;">Diese E-Mail wurde automatisch generiert.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Template 3: Overdue Alert -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="bg-red-600 text-white p-4">
+                        <h3 class="text-lg font-semibold">3. Überfällige Deadline</h3>
+                        <p class="text-sm opacity-90">Wird gesendet wenn Deadline überschritten wurde</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="mb-4 text-sm text-gray-600">
+                            <div><strong>An:</strong> user@example.com</div>
+                            <div><strong>Betreff:</strong> 🔴 DRINGEND: Rapport-Deadline überschritten!</div>
+                        </div>
+                        <div class="email-preview bg-gray-50 p-6 rounded-lg">
+                            <h2 style="color: #dc2626; font-size: 24px; font-weight: bold;">🔴 Deadline überschritten!</h2>
+                            <p style="color: #4b5563; margin: 16px 0;">Hallo Max Mustermann,</p>
+                            <p style="color: #dc2626; font-weight: 600; margin: 16px 0;">Ihre Rapport-Deadline wurde überschritten!</p>
+                            
+                            <div style="background-color: #fee2e2; border-left: 4px solid #dc2626; padding: 16px; margin: 20px 0;">
+                                <p style="color: #991b1b; font-weight: 600; margin: 0;">
+                                    Der Rapport für TP1 - Leitmedien war am 31.12.2024 fällig und ist nun 2 Tage überfällig.
+                                </p>
+                            </div>
+                            
+                            <p style="color: #1f2937; margin: 20px 0;">
+                                Bitte erstellen Sie den Rapport umgehend oder kontaktieren Sie Ihren Vorgesetzten, falls Sie Unterstützung benötigen.
+                            </p>
+                            
+                            <p style="margin: 20px 0;">
+                                <a href="#" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                                    Sofort Rapport erstellen
+                                </a>
+                            </p>
+                            
+                            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
+                            <p style="color: #9ca3af; font-size: 12px;">Diese E-Mail wurde automatisch generiert.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Email Sending -->
+                <div class="bg-white rounded-lg shadow-md p-6 mt-8">
+                    <h3 class="text-lg font-semibold mb-4">🧪 E-Mail Test senden</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                        <p class="text-sm text-gray-600 mb-3">Test-E-Mail an sich selbst senden:</p>
+                        <div class="flex gap-4">
+                            <input type="email" id="test-email" placeholder="test@example.com" 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="test-template" class="px-3 py-2 border border-gray-300 rounded-lg">
+                                <option value="request">Anforderung</option>
+                                <option value="reminder">Erinnerung</option>
+                                <option value="overdue">Überfällig</option>
+                            </select>
+                            <button onclick="sendTestEmail()" 
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Test senden
+                            </button>
+                        </div>
+                        <div id="test-result" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin;
+        
+        // Check email configuration status
+        async function checkEmailStatus() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/api/health/email-status`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const statusEl = document.getElementById('email-status');
+                const serviceTypeEl = document.getElementById('service-type');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Show service type
+                    if (data.serviceType === 'mailgun') {
+                        serviceTypeEl.textContent = 'Mailgun';
+                        serviceTypeEl.className = 'bg-purple-100 px-2 py-1 rounded font-semibold text-purple-800';
+                        
+                        // Show Mailgun-specific fields
+                        document.getElementById('mailgun-config').style.display = 'flex';
+                        document.getElementById('mailgun-region').style.display = 'flex';
+                        document.getElementById('mailgun-domain').textContent = data.mailgunDomain || 'Nicht konfiguriert';
+                        document.getElementById('mailgun-region-value').textContent = data.mailgunRegion || 'US';
+                        
+                        // Hide SMTP fields
+                        document.getElementById('smtp-config').style.display = 'none';
+                        document.getElementById('smtp-port-config').style.display = 'none';
+                    } else if (data.serviceType === 'smtp') {
+                        serviceTypeEl.textContent = 'SMTP';
+                        serviceTypeEl.className = 'bg-blue-100 px-2 py-1 rounded font-semibold text-blue-800';
+                        
+                        // Show SMTP-specific fields
+                        document.getElementById('smtp-config').style.display = 'flex';
+                        document.getElementById('smtp-port-config').style.display = 'flex';
+                        document.getElementById('smtp-host').textContent = data.host || 'Nicht konfiguriert';
+                        document.getElementById('smtp-port').textContent = data.port || '587';
+                        
+                        // Hide Mailgun fields
+                        document.getElementById('mailgun-config').style.display = 'none';
+                        document.getElementById('mailgun-region').style.display = 'none';
+                    } else {
+                        serviceTypeEl.textContent = 'Nicht konfiguriert';
+                        serviceTypeEl.className = 'bg-gray-100 px-2 py-1 rounded font-semibold text-gray-600';
+                        
+                        // Hide all service-specific fields
+                        document.getElementById('mailgun-config').style.display = 'none';
+                        document.getElementById('mailgun-region').style.display = 'none';
+                        document.getElementById('smtp-config').style.display = 'none';
+                        document.getElementById('smtp-port-config').style.display = 'none';
+                    }
+                    
+                    // Show common fields
+                    document.getElementById('email-from').textContent = data.from || 'noreply@sbv-professional.ch';
+                    
+                    // Update status
+                    if (data.enabled) {
+                        statusEl.textContent = 'Aktiv';
+                        statusEl.className = 'px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800';
+                    } else {
+                        statusEl.textContent = 'Inaktiv';
+                        statusEl.className = 'px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800';
+                    }
+                } else {
+                    statusEl.textContent = 'Fehler';
+                    statusEl.className = 'px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800';
+                    serviceTypeEl.textContent = 'Fehler';
+                    serviceTypeEl.className = 'bg-red-100 px-2 py-1 rounded font-semibold text-red-800';
+                }
+            } catch (error) {
+                console.error('Fehler beim Prüfen des E-Mail-Status:', error);
+                document.getElementById('email-status').textContent = 'Netzwerkfehler';
+                document.getElementById('email-status').className = 'px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800';
+            }
+        }
+        
+        // Send test email
+        async function sendTestEmail() {
+            const email = document.getElementById('test-email').value;
+            const template = document.getElementById('test-template').value;
+            const resultEl = document.getElementById('test-result');
+            
+            if (!email) {
+                resultEl.innerHTML = '<p class="text-red-600 text-sm">Bitte E-Mail-Adresse eingeben</p>';
+                return;
+            }
+            
+            resultEl.innerHTML = '<p class="text-blue-600 text-sm">Sende Test-E-Mail...</p>';
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/api/test/send-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, template })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    if (data.skipped) {
+                        resultEl.innerHTML = '<p class="text-yellow-600 text-sm">⚠️ E-Mail-Service ist deaktiviert. E-Mail wurde nur geloggt (siehe Server-Konsole).</p>';
+                    } else {
+                        resultEl.innerHTML = '<p class="text-green-600 text-sm">✅ Test-E-Mail erfolgreich gesendet!</p>';
+                    }
+                } else {
+                    resultEl.innerHTML = `<p class="text-red-600 text-sm">❌ Fehler: ${data.message || 'Unbekannter Fehler'}</p>`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = '<p class="text-red-600 text-sm">❌ Netzwerkfehler. Ist der Server erreichbar?</p>';
+            }
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkEmailStatus();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Einstellungen - SBV Professional</title>
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link as="style" href="https://fonts.googleapis.com/css2?display=swap&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" onload="this.rel='stylesheet'" rel="stylesheet"/>
+    <link rel="stylesheet" href="../assets/css/responsive-framework.css">
+    <link rel="stylesheet" href="../assets/css/sidebar-preload.css">
+    <!-- Master Typography - MUSS als LETZTE CSS Datei kommen -->
+    <link rel="stylesheet" href="../assets/css/master-typography.css">
+    <!-- Load unified sidebar component -->
+    <script src="../assets/js/fix-user-consistency.js"></script>
+    <script src="../assets/js/smooth-navigation.js"></script>
+    <script src="../assets/js/sidebar-component.js"></script>
+    <!-- Mobile Menu Final Solution -->
+    <script src="../assets/js/mobile-menu-final.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style type="text/tailwindcss">
+        :root {
+            --color-primary: #A4D2F4;
+            --color-secondary: #6BAF38;
+            --color-danger: #ef4444;
+            --color-warning: #f59e0b;
+            --color-success: #10b981;
+            --color-text-primary: #111827;
+            --color-text-secondary: #6B7280;
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f3f4f6;
+            --color-card-background: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-red: #DC2626;
+            --color-black: #000000;
+            --color-light-blue: #A4D2F4;
+            --color-green: #6BAF38;
+            --color-background: #F8FAFC;
+            --color-orange: #F59E0B;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .button_primary {
+            @apply bg-[var(--color-light-blue)] text-[var(--color-black)] rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-opacity-80 transition-colors;
+        }
+        .button_secondary {
+            @apply bg-[var(--color-secondary)] text-white rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-opacity-80 transition-colors;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 1rem;
+            border-radius: 9999px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .nav-link-active {
+            background-color: rgba(164, 210, 244, 0.3);
+            color: var(--color-black);
+            font-weight: 600;
+        }
+        .nav-link-inactive {
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+        .nav-link-inactive:hover {
+            background-color: #f3f4f6;
+        }
+        .tab-button {
+            border-bottom-width: 2px;
+            padding: 0.5rem 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .tab-button.active {
+            border-color: var(--color-secondary);
+            color: var(--color-text-primary);
+            font-weight: 600;
+        }
+        .tab-button:not(.active) {
+            border-color: transparent;
+            color: var(--color-text-secondary);
+        }
+        .tab-button:not(.active):hover {
+            color: var(--color-text-primary);
+            border-color: #d1d5db;
+        }
+    </style>
+</head>
+<body class="bg-[var(--color-background)]">
+    <!-- Mobile Menu Button (Schwebend) -->
+    <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+    
+    <div class="app-wrapper">
+        <div class="app-container">
+            <!-- Mobile Overlay -->
+            <div id="mobile-overlay" class="sidebar-overlay"></div>
+            
+            <!-- SBV Navigation Sidebar -->
+            <aside id="sidebar" class="app-sidebar bg-[var(--color-card-background)] shadow-lg flex flex-col p-6">
+            <!-- Sidebar content will be loaded by sidebar-component.js -->
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="app-content">
+                <!-- Header -->
+                <div class="content-wrapper">
+                <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-4">Einstellungen</h1>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="px-8 mb-6">
+                <div class="border-b border-[var(--color-border)]">
+                    <nav class="-mb-px flex space-x-8">
+                        <button class="tab-button active" onclick="showTab('profile')">
+                            Mein Profil
+                        </button>
+                        <button class="tab-button" onclick="showTab('notifications')">
+                            Benachrichtigungen
+                        </button>
+                        <button class="tab-button" onclick="showTab('users')" id="usersTabButton">
+                            Benutzer
+                        </button>
+                        <button class="tab-button" onclick="showTab('system')">
+                            System
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="px-8">
+                <!-- Profil Tab -->
+                <div id="profileTab" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-lg font-semibold mb-4 text-[var(--color-text-primary)]">Persönliche Informationen</h2>
+                        <form class="space-y-4" onsubmit="updateProfile(event)">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Vorname</label>
+                                    <input type="text" id="firstName" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Nachname</label>
+                                    <input type="text" id="lastName" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">E-Mail-Adresse</label>
+                                <input type="email" id="email" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-gray-50" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Telefon</label>
+                                <input type="tel" id="phone" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                            </div>
+                            <div class="pt-4">
+                                <button type="submit" class="button_secondary">
+                                    Änderungen speichern
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Benachrichtigungen Tab -->
+                <div id="notificationsTab" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-lg font-semibold mb-4 text-[var(--color-text-primary)]">E-Mail-Benachrichtigungen</h2>
+                        <div class="space-y-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 rounded text-[var(--color-secondary)] focus:ring-[var(--color-light-blue)]" checked>
+                                <span class="text-[var(--color-text-primary)]">Benachrichtigungen bei neuen Gesuchen</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 rounded text-[var(--color-secondary)] focus:ring-[var(--color-light-blue)]" checked>
+                                <span class="text-[var(--color-text-primary)]">Wöchentliche Zusammenfassung</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3 rounded text-[var(--color-secondary)] focus:ring-[var(--color-light-blue)]">
+                                <span class="text-[var(--color-text-primary)]">Statusänderungen von Gesuchen</span>
+                            </label>
+                        </div>
+                        <div class="pt-4">
+                            <button class="button_secondary" onclick="saveNotificationSettings()">
+                                Einstellungen speichern
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Benutzer Tab -->
+                <div id="usersTab" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-semibold text-[var(--color-text-primary)]">Benutzerverwaltung</h2>
+                            <button onclick="openUserModal()" class="button_secondary flex items-center gap-2">
+                                <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                </svg>
+                                Neuen Benutzer hinzufügen
+                            </button>
+                        </div>
+                        
+                        <div id="userTableContainer">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase">Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase">E-Mail</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase">Rolle</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase">Aktionen</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Wird dynamisch gefüllt -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Tab -->
+                <div id="systemTab" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-lg font-semibold mb-4 text-[var(--color-text-primary)]">Systemeinstellungen</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Standard-Währung</label>
+                                <select class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                                    <option>CHF</option>
+                                    <option>EUR</option>
+                                    <option>USD</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Zeitzone</label>
+                                <select class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                                    <option>Europe/Zurich</option>
+                                    <option>Europe/Berlin</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Sprache</label>
+                                <select class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                                    <option>Deutsch</option>
+                                    <option>Français</option>
+                                    <option>Italiano</option>
+                                    <option>English</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pt-4">
+                            <button class="button_secondary" onclick="saveSystemSettings()">
+                                Einstellungen speichern
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Benutzer Modal -->
+    <div id="userModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--color-text-primary)]">Neuen Benutzer hinzufügen</h3>
+            <form id="userForm" onsubmit="handleUserSubmit(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" required class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">E-Mail <span class="text-red-500">*</span></label>
+                    <input type="email" name="email" required class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Vorname</label>
+                        <input type="text" name="first_name" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Nachname</label>
+                        <input type="text" name="last_name" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Telefon</label>
+                    <input type="tel" name="phone" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Rolle <span class="text-red-500">*</span></label>
+                    <select name="rolle" required class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-light-blue)]">
+                        <option value="user">Nutzer</option>
+                        <option value="admin">Administrator</option>
+                        <option value="super_admin">Super Administrator</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeUserModal()" class="px-4 py-2 bg-gray-100 text-[var(--color-text-primary)] rounded-lg hover:bg-gray-200 transition-colors">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="button_secondary">
+                        Benutzer erstellen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Passwort Info Modal -->
+    <div id="passwordModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--color-text-primary)]">Benutzer erfolgreich erstellt</h3>
+            <div class="mb-4">
+                <p class="text-sm text-[var(--color-text-secondary)] mb-4">Der Benutzer wurde erfolgreich angelegt. Bitte notieren Sie das temporäre Passwort:</p>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm font-medium text-[var(--color-text-primary)]">Name: <span id="newUserName"></span></p>
+                    <p class="text-sm font-medium text-[var(--color-text-primary)]">E-Mail: <span id="newUserEmail"></span></p>
+                    <p class="text-sm font-medium mt-2 text-[var(--color-text-primary)]">Temporäres Passwort:</p>
+                    <p class="font-mono text-lg bg-white p-2 rounded mt-1 text-[var(--color-text-primary)]" id="newUserPassword"></p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="copyPassword()" class="px-4 py-2 bg-gray-100 text-[var(--color-text-primary)] rounded-lg hover:bg-gray-200 transition-colors">
+                    Passwort kopieren
+                </button>
+                <button onclick="closePasswordModal()" class="button_secondary">
+                    Schliessen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Backend URL configuration - consistent with other pages
+        const API_BASE_URL = window.API_BASE_URL || '';
+        console.log('API Base URL:', API_BASE_URL);
+        
+        // Check authentication on page load
+        async function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '../login.html';
+                return false;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.status === 401) {
+                    // Only logout on actual authentication failure
+                    localStorage.removeItem('authToken');
+                    window.location.href = '../login.html';
+                    return false;
+                }
+                
+                if (!response.ok) {
+                    // Other errors (500, etc) - don't logout
+                    console.error('Auth check error:', response.status);
+                    // Still allow user to stay on page
+                    return true;
+                }
+                
+                return true;
+            } catch (error) {
+                // Network error - don't logout, just log the error
+                console.error('Auth check network error:', error);
+                // Allow user to stay on page during network issues
+                return true;
+            }
+        }
+        
+        // Load user info and set navigation
+        async function loadUserInfo() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    window.location.href = '../login.html';
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.status === 401) {
+                    // Only logout on actual authentication failure
+                    localStorage.removeItem('authToken');
+                    window.location.href = '../login.html';
+                    return;
+                }
+                
+                if (!response.ok) {
+                    // Other errors - don't logout
+                    console.error('Error loading user profile:', response.status);
+                    return;
+                }
+                
+                const userResponse = await response.json();
+                const user = userResponse.user;
+                
+                // Display user name
+                let displayName = 'Benutzer';
+                if (user.first_name && user.last_name) {
+                    displayName = `${user.first_name} ${user.last_name}`;
+                } else if (user.name) {
+                    displayName = user.name;
+                }
+                
+                document.getElementById('user-name').textContent = displayName;
+                
+                // Set role display
+                const roleDisplayMap = {
+                    'super_admin': 'Super Administrator',
+                    'admin': 'Administrator', 
+                    'user': 'Nutzer'
+                };
+                
+                const userRole = user.role || 'user';
+                console.log('🔍 AUDIT: User role detected:', userRole);
+                console.log('🔍 AUDIT: User object:', user);
+                document.getElementById('user-role').textContent = roleDisplayMap[userRole] || 'Nutzer';
+                
+                // Update navigation based on user role
+                updateNavigationForRole(userRole);
+                
+                // Show usersTabButton element for debugging
+                const usersTabButton = document.getElementById('usersTabButton');
+                console.log('🔍 AUDIT: usersTabButton element found:', !!usersTabButton);
+                
+                // Hide user management tab for non-admins - WITH DEBUG
+                if (userRole !== 'admin' && userRole !== 'super_admin') {
+                    console.log('🔍 AUDIT: Hiding usersTabButton because role is:', userRole);
+                    if (usersTabButton) {
+                        usersTabButton.style.display = 'none';
+                    }
+                } else {
+                    console.log('🔍 AUDIT: Showing usersTabButton because role is admin/super_admin:', userRole);
+                    if (usersTabButton) {
+                        usersTabButton.style.display = 'inline-block';
+                    }
+                    // If current tab is users tab, load users immediately
+                    const currentActiveTab = document.querySelector('.tab-button.active');
+                    if (currentActiveTab && currentActiveTab.textContent.trim() === 'Benutzer') {
+                        console.log('Loading users immediately for active users tab');
+                        loadUsers();
+                    }
+                }
+                
+                // Load profile data
+                if (user.first_name) document.getElementById('firstName').value = user.first_name;
+                if (user.last_name) document.getElementById('lastName').value = user.last_name;
+                if (user.email) document.getElementById('email').value = user.email;
+                if (user.phone) document.getElementById('phone').value = user.phone;
+            } catch (error) {
+                // Network error - don't logout
+                console.error('Network error loading user info:', error);
+                // Keep user on page during network issues
+            }
+        }
+
+        // Update navigation based on user role
+        function updateNavigationForRole(userRole) {
+            const archivLink = document.querySelector('a[href="archiv.html"]');
+            
+            // Hide Archive for regular users
+            if (userRole === 'user') {
+                if (archivLink) {
+                    archivLink.style.display = 'none';
+                }
+            } else {
+                if (archivLink) {
+                    archivLink.style.display = 'flex';
+                }
+            }
+        }
+
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Reset all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            event.target.classList.add('active');
+            
+            // Load users if users tab is selected
+            if (tabName === 'users') {
+                loadUsers();
+            }
+        }
+
+        // Load users for admin/super admin
+        async function loadUsers() {
+            console.log('loadUsers() called');
+            const token = localStorage.getItem('authToken');
+            console.log('Token exists:', !!token);
+            
+            if (!token) {
+                console.log('No token found, showing login message');
+                document.getElementById('userTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-red-600">
+                            Bitte melden Sie sich zuerst an.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            try {
+                console.log('Showing loading state');
+                // Show loading state
+                document.getElementById('userTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            Lade Benutzer...
+                        </td>
+                    </tr>
+                `;
+
+                console.log('Making API request to /api/users');
+                const response = await fetch(`${API_BASE_URL}/api/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('API response status:', response.status);
+                console.log('API response ok:', response.ok);
+                
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        throw new Error('Keine Berechtigung zum Verwalten von Benutzern');
+                    }
+                    if (response.status === 404) {
+                        throw new Error('API-Endpunkt nicht gefunden - Backend läuft möglicherweise nicht');
+                    }
+                    throw new Error(`HTTP ${response.status}: Fehler beim Laden der Benutzer`);
+                }
+                
+                const result = await response.json();
+                console.log('API response data:', result);
+                const users = result.users || result || [];
+                console.log('Users array:', users);
+                console.log('Users count:', users.length);
+                const tbody = document.getElementById('userTableBody');
+                
+                if (users.length === 0) {
+                    console.log('No users found, showing empty message');
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                Keine Benutzer gefunden.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Role display mapping
+                const roleDisplayMap = {
+                    'super_admin': 'Super Administrator',
+                    'admin': 'Administrator',
+                    'user': 'Nutzer'
+                };
+                
+                tbody.innerHTML = users.map(user => {
+                    const displayName = user.name || 
+                                       (user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : '') ||
+                                       user.email ||
+                                       'N/A';
+                    
+                    const roleDisplay = roleDisplayMap[user.role] || user.role || 'Nutzer';
+                    
+                    // Role color mapping
+                    let roleColorClasses = '';
+                    switch(user.role) {
+                        case 'super_admin':
+                            roleColorClasses = 'bg-red-100 text-red-800';
+                            break;
+                        case 'admin':
+                            roleColorClasses = 'bg-blue-100 text-blue-800';
+                            break;
+                        default:
+                            roleColorClasses = 'bg-green-100 text-green-800';
+                    }
+                    
+                    return `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text-primary)]">${displayName}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">${user.email}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${roleColorClasses}">
+                                    ${roleDisplay}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.active !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                                    ${user.active !== false ? 'Aktiv' : 'Inaktiv'}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <button onclick="editUser(${user.id}, '${user.name || ''}', '${user.email}', '${user.role}', '${user.first_name || ''}', '${user.last_name || ''}', '${user.phone || ''}')" 
+                                        class="text-blue-600 hover:text-blue-900 mr-3" 
+                                        title="Benutzer bearbeiten">
+                                    <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="toggleUserStatus(${user.id}, ${user.active !== false})" 
+                                        class="${user.active !== false ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'} mr-3" 
+                                        title="${user.active !== false ? 'Benutzer deaktivieren' : 'Benutzer aktivieren'}">
+                                    ${user.active !== false ? 
+                                        '<svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>' :
+                                        '<svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg>'
+                                    }
+                                </button>
+                                <button onclick="deleteUser(${user.id}, '${displayName}')" 
+                                        class="text-red-600 hover:text-red-900" 
+                                        title="Benutzer löschen">
+                                    <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                console.log('Users table successfully populated');
+            } catch (error) {
+                console.error('Fehler beim Laden der Benutzer:', error);
+                
+                // If API is not available, show sample data for development
+                if (error.message.includes('API-Endpunkt nicht gefunden') || error.message.includes('Failed to fetch')) {
+                    console.log('API not available, showing sample data');
+                    document.getElementById('userTableBody').innerHTML = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text-primary)]">Administrator Test</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">admin@sbv.ch</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    Administrator
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Aktiv
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <button class="text-blue-600 hover:text-blue-900 mr-3" title="Benutzer bearbeiten" onclick="alert('Backend nicht verfügbar - Demo-Modus')">
+                                    <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    </svg>
+                                </button>
+                                <button class="text-orange-600 hover:text-orange-900 mr-3" title="Benutzer deaktivieren" onclick="alert('Backend nicht verfügbar - Demo-Modus')">
+                                    <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                    </svg>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" title="Benutzer löschen" onclick="alert('Backend nicht verfügbar - Demo-Modus')">
+                                    <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text-primary)]">Max Mustermann</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">max@sbv.ch</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Nutzer
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Aktiv
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <button class="text-blue-600 hover:text-blue-900 mr-3" title="Benutzer bearbeiten" onclick="alert('Backend nicht verfügbar - Demo-Modus')">
+                                    <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    </svg>
+                                </button>
+                                <button class="text-orange-600 hover:text-orange-900 mr-3" title="Benutzer deaktivieren" onclick="alert('Backend nicht verfügbar - Demo-Modus')">
+                                    <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                    </svg>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" title="Benutzer löschen" onclick="alert('Backend nicht verfügbar - Demo-Modus')">
+                                    <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    document.getElementById('userTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-red-600">
+                                ${error.message || 'Fehler beim Laden der Benutzer. Bitte versuchen Sie es später erneut.'}
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+
+        // Modal functions
+        function openUserModal() {
+            // Reset for new user creation
+            editingUserId = null;
+            document.querySelector('#userModal h3').textContent = 'Neuen Benutzer hinzufügen';
+            document.querySelector('#userModal button[type="submit"]').textContent = 'Benutzer erstellen';
+            document.querySelector('#userModal button[type="submit"]').className = 'button_secondary';
+            document.getElementById('userForm').reset();
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+        
+        function closeUserModal() {
+            document.getElementById('userModal').classList.add('hidden');
+            document.getElementById('userForm').reset();
+            editingUserId = null;
+        }
+
+        // User creation and editing
+        async function handleUserSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const userData = Object.fromEntries(formData);
+            
+            // Client-side validation
+            if (!userData.name || !userData.email || !userData.rolle) {
+                alert('Bitte füllen Sie alle Pflichtfelder aus.');
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(userData.email)) {
+                alert('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                
+                // Prepare user data for API
+                const apiUserData = {
+                    name: userData.name,
+                    email: userData.email,
+                    role: userData.rolle,
+                    first_name: userData.first_name || '',
+                    last_name: userData.last_name || '',
+                    phone: userData.phone || ''
+                };
+                
+                let response;
+                let successMessage;
+                
+                if (editingUserId) {
+                    // Edit existing user
+                    response = await fetch(`${API_BASE_URL}/api/users/${editingUserId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(apiUserData)
+                    });
+                    successMessage = 'Benutzer erfolgreich aktualisiert';
+                } else {
+                    // Create new user
+                    response = await fetch(`${API_BASE_URL}/api/users`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(apiUserData)
+                    });
+                    successMessage = 'Benutzer erfolgreich erstellt';
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    if (response.status === 409) {
+                        throw new Error('Ein Benutzer mit dieser E-Mail-Adresse existiert bereits.');
+                    } else if (response.status === 403) {
+                        throw new Error(`Keine Berechtigung zum ${editingUserId ? 'Bearbeiten' : 'Erstellen'} von Benutzern.`);
+                    }
+                    throw new Error(errorData.message || `Fehler beim ${editingUserId ? 'Bearbeiten' : 'Erstellen'} des Benutzers`);
+                }
+                
+                const result = await response.json();
+                
+                if (editingUserId) {
+                    // For editing, just show success message
+                    closeUserModal();
+                    alert(successMessage);
+                } else {
+                    // For new user, show temporary password
+                    const tempPassword = result.temporaryPassword || result.password || 'SBV-' + Math.random().toString(36).substr(2, 9);
+                    
+                    document.getElementById('newUserName').textContent = userData.name;
+                    document.getElementById('newUserEmail').textContent = userData.email;
+                    document.getElementById('newUserPassword').textContent = tempPassword;
+                    
+                    closeUserModal();
+                    document.getElementById('passwordModal').classList.remove('hidden');
+                }
+                
+                // Reload user list
+                loadUsers();
+                
+                console.log(successMessage + ':', result);
+            } catch (error) {
+                console.error(`Fehler beim ${editingUserId ? 'Bearbeiten' : 'Erstellen'} des Benutzers:`, error);
+                alert(`Fehler beim ${editingUserId ? 'Bearbeiten' : 'Erstellen'} des Benutzers: ` + error.message);
+            }
+        }
+
+        // Password modal functions
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+        
+        function copyPassword() {
+            const password = document.getElementById('newUserPassword').textContent;
+            navigator.clipboard.writeText(password).then(() => {
+                alert('Passwort wurde in die Zwischenablage kopiert');
+            });
+        }
+
+        // Profile update
+        async function updateProfile(event) {
+            event.preventDefault();
+            const profileData = {
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                phone: document.getElementById('phone').value
+            };
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(profileData)
+                });
+                
+                if (response.ok) {
+                    alert('Profil erfolgreich aktualisiert');
+                    loadUserInfo(); // Reload user info
+                } else {
+                    throw new Error('Fehler beim Aktualisieren des Profils');
+                }
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+
+        // Save notification settings
+        function saveNotificationSettings() {
+            alert('Benachrichtigungseinstellungen werden gespeichert...');
+        }
+
+        // Save system settings
+        function saveSystemSettings() {
+            alert('Systemeinstellungen werden gespeichert...');
+        }
+
+        // User management functions
+        let editingUserId = null;
+        
+        function editUser(userId, name, email, role, firstName, lastName, phone) {
+            editingUserId = userId;
+            
+            // Pre-fill the modal with user data
+            document.querySelector('input[name="name"]').value = name || '';
+            document.querySelector('input[name="email"]').value = email || '';
+            document.querySelector('select[name="rolle"]').value = role || 'user';
+            document.querySelector('input[name="first_name"]').value = firstName || '';
+            document.querySelector('input[name="last_name"]').value = lastName || '';
+            document.querySelector('input[name="phone"]').value = phone || '';
+            
+            // Change modal title and button text
+            document.querySelector('#userModal h3').textContent = 'Benutzer bearbeiten';
+            document.querySelector('#userModal button[type="submit"]').textContent = 'Änderungen speichern';
+            document.querySelector('#userModal button[type="submit"]').className = 'button_primary';
+            
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+        
+        async function toggleUserStatus(userId, currentActive) {
+            const action = currentActive ? 'deaktivieren' : 'aktivieren';
+            
+            if (!confirm(`Möchten Sie diesen Benutzer wirklich ${action}?`)) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/api/users/${userId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ active: !currentActive })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    if (response.status === 403) {
+                        throw new Error('Keine Berechtigung zum Ändern des Benutzerstatus.');
+                    }
+                    throw new Error(errorData.message || `Fehler beim ${action} des Benutzers`);
+                }
+                
+                // Reload user list
+                loadUsers();
+                
+                alert(`Benutzer wurde erfolgreich ${currentActive ? 'deaktiviert' : 'aktiviert'}.`);
+            } catch (error) {
+                console.error('Fehler beim Ändern des Benutzerstatus:', error);
+                alert('Fehler: ' + error.message);
+            }
+        }
+        
+        async function deleteUser(userId, userName) {
+            if (!confirm(`Möchten Sie den Benutzer "${userName}" wirklich dauerhaft löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden.`)) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    if (response.status === 403) {
+                        throw new Error('Keine Berechtigung zum Löschen von Benutzern.');
+                    } else if (response.status === 409) {
+                        throw new Error('Benutzer kann nicht gelöscht werden, da noch abhängige Daten existieren.');
+                    }
+                    throw new Error(errorData.message || 'Fehler beim Löschen des Benutzers');
+                }
+                
+                // Reload user list
+                loadUsers();
+                
+                alert(`Benutzer "${userName}" wurde erfolgreich gelöscht.`);
+            } catch (error) {
+                console.error('Fehler beim Löschen des Benutzers:', error);
+                alert('Fehler: ' + error.message);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            // Clear authentication token
+            localStorage.removeItem('authToken');
+            // Clear any other stored data
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userName');
+            // Force redirect to login page
+            window.location.replace('../login.html');
+        }
+
+        // Setup mobile menu functionality
+        function setupMobileMenu() {
+            const toggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            if (toggle && sidebar && overlay) {
+                toggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                    document.body.classList.toggle('sidebar-open');
+                });
+                
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.classList.remove('sidebar-open');
+                });
+                
+                // Close mobile menu when clicking on a nav link
+                sidebar.addEventListener('click', (e) => {
+                    if (e.target.closest('.nav-link')) {
+                        if (window.innerWidth < 1024) { // lg breakpoint
+                            sidebar.classList.remove('active');
+                            overlay.classList.remove('active');
+                            document.body.classList.remove('sidebar-open');
+                        }
+                    }
+                });
+                
+                // Close sidebar on resize to desktop
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth >= 1024) {
+                        sidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                        document.body.classList.remove('sidebar-open');
+                    }
+                });
+            }
+        }
+
+// Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize unified sidebar
+            initializeSidebar('einstellungen');
+            
+            // Legacy functions now handled by sidebar-component.js
+            // setupMobileMenu();
+            const isAuthenticated = await checkAuth();
+            if (isAuthenticated) {
+                // await loadUserInfo(); - Now handled by sidebar-component
+            }
+        });
+    </script>
+</body>
+</html>

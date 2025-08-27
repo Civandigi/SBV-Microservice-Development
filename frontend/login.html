@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SBV Professional - Anmeldung</title>
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link rel="preload" as="style"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap"
+          onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap">
+    </noscript>
+    <link rel="stylesheet" href="/assets/css/responsive-improvements.css">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- API Konfiguration -->
+    <script src="js/config.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script src="/assets/js/tailwind-config.js"></script>
+    
+    <!-- Tailwind-Konfiguration -->
+    <script type="text/tailwindcss">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'sbv-light-blue': '#A4D2F4',
+            'sbv-green': '#6BAF38',
+            'sbv-green-dark': '#5a9832',
+            'sbv-background': '#F8FAFC',
+            'sbv-text-primary': '#111827',
+            'sbv-text-secondary': '#6B7280',
+            'sbv-card': '#FFFFFF',
+            'sbv-border': '#E5E7EB',
+            'sbv-red': '#DC2626',
+          }
+        }
+      }
+    }
+    </script>
+
+    <!-- Normales CSS -->
+    <style>
+        :root {
+            --color-primary: #A4D2F4;
+            --color-secondary: #6BAF38;
+            --color-danger: #ef4444;
+            --color-warning: #f59e0b;
+            --color-success: #10b981;
+            --color-text-primary: #111827;
+            --color-text-secondary: #6B7280;
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f3f4f6;
+            --color-card-background: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-red: #DC2626;
+            --color-black: #000000;
+            --color-light-blue: #A4D2F4;
+            --color-green: #6BAF38;
+            --color-background: #F8FAFC;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .login-form {
+            background: linear-gradient(135deg, var(--color-light-blue) 0%, #ffffff 100%);
+        }
+    </style>
+</head>
+<body class="bg-sbv-background min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md">
+        <!-- Login Card -->
+        <div class="bg-sbv-card rounded-3xl shadow-xl p-8">
+            <!-- SBV Logo & Header -->
+            <div class="text-center mb-8">
+                <div class="mx-auto mb-6 flex justify-center">
+                    <img src="assets/images/logo.png" 
+                         alt="SBV Logo" 
+                         class="h-20 w-auto object-contain" />
+                </div>
+                <h1 class="text-2xl font-bold text-sbv-text-primary mb-2">Willkommen zurück</h1>
+                <p class="text-sbv-text-secondary">Melden Sie sich in Ihrem SBV Professional-Konto an</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                <p id="error-text"></p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-6">
+                <!-- Email Input -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-sbv-text-primary mb-1">E-Mail</label>
+                    <input type="email" id="email" name="email" required
+                           class="w-full px-4 py-3 rounded-lg border border-sbv-border focus:border-sbv-green focus:ring-2 focus:ring-sbv-light-blue outline-none transition duration-200"
+                           placeholder="Ihre E-Mail-Adresse">
+                </div>
+
+                <!-- Password Input -->
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label for="password" class="block text-sm font-medium text-sbv-text-primary">Passwort</label>
+                        <a href="#" class="text-sm text-sbv-green hover:underline">Passwort vergessen?</a>
+                    </div>
+                    <div class="relative">
+                        <input type="password" id="password" name="password" required
+                               class="w-full px-4 py-3 rounded-lg border border-sbv-border focus:border-sbv-green focus:ring-2 focus:ring-sbv-light-blue outline-none transition duration-200"
+                               placeholder="Ihr Passwort">
+                        <button type="button" id="toggle-password" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                            <svg id="show-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <svg id="hide-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me Checkbox -->
+                <div class="flex items-center">
+                    <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-sbv-green rounded border-gray-300 focus:ring-sbv-green">
+                    <label for="remember-me" class="ml-2 block text-sm text-sbv-text-secondary">
+                        Angemeldet bleiben
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="login-button"
+                        class="w-full bg-sbv-green hover:bg-sbv-green-dark text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg"
+                        style="background-color: #6BAF38; color: white; min-height: 48px;">
+                    <span>Anmelden</span>
+                    <div id="loading-spinner" class="hidden ml-2 animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                </button>
+            </form>
+
+            <!-- Demo Users Info -->
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h3 class="text-sm font-semibold text-blue-800 mb-2">Demo-Zugangsdaten:</h3>
+                <div class="text-xs text-blue-700 space-y-1">
+                    <div><strong>Admin:</strong> admin@sbv.ch (admin123)</div>
+                    <div><strong>User:</strong> user@sbv.ch (user123)</div>
+                    <div><strong>Super Admin:</strong> superadmin@sbv-demo.ch (test123)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copyright Only -->
+        <div class="mt-6 text-center text-sm text-sbv-text-secondary">
+            <p>© 2025 Schweizer Bauernverband</p>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if already logged in
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Password visibility toggle
+            const togglePassword = document.getElementById('toggle-password');
+            const passwordInput = document.getElementById('password');
+            const showIcon = document.getElementById('show-icon');
+            const hideIcon = document.getElementById('hide-icon');
+
+            togglePassword.addEventListener('click', () => {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    showIcon.classList.add('hidden');
+                    hideIcon.classList.remove('hidden');
+                } else {
+                    passwordInput.type = 'password';
+                    showIcon.classList.remove('hidden');
+                    hideIcon.classList.add('hidden');
+                }
+            });
+
+            // Login form submission
+            const loginForm = document.getElementById('login-form');
+            const loginButton = document.getElementById('login-button');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Show loading spinner
+                loginButton.disabled = true;
+                loadingSpinner.classList.remove('hidden');
+                
+                // Hide any previous error message
+                errorMessage.classList.add('hidden');
+
+                // Get form data
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                try {
+                    // Make API call to login endpoint
+                    const apiUrl = window.API_BASE_URL || '';
+                    const response = await fetch(`${apiUrl}/api/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email, password }),
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // Store the JWT token
+                        localStorage.setItem('authToken', data.token);
+                        
+                        // Redirect to dashboard
+                        window.location.href = 'index.html';
+                    } else {
+                        // Show error message
+                        errorText.textContent = data.message || 'Anmeldung fehlgeschlagen';
+                        errorMessage.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    errorText.textContent = 'Verbindungsfehler. Bitte versuchen Sie es später erneut.';
+                    errorMessage.classList.remove('hidden');
+                } finally {
+                    // Hide loading spinner
+                    loginButton.disabled = false;
+                    loadingSpinner.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

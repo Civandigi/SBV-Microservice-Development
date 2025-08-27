@@ -1,0 +1,425 @@
+/* 
+ * Responsive Framework für SBV Professional App
+ * Zentralisierte Responsive-Styles für konsistente Darstellung
+ */
+
+/* ============================================
+   VARIABLEN UND BREAKPOINTS
+   ============================================ */
+:root {
+    --mobile-header-height: 64px;
+    --sidebar-width: 256px;
+    --z-mobile-header: 10000;
+    --z-sidebar: 9998;
+    --z-overlay: 9997;
+    --z-modal: 10001;
+}
+
+/* ============================================
+   NAVIGATION TYPOGRAPHY STANDARDS
+   ============================================ */
+.nav-user-name {
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 600; /* font-semibold */
+}
+
+.nav-user-role {
+    font-size: 0.75rem; /* text-xs */
+    color: var(--color-text-secondary);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    border-radius: 9999px;
+    transition: all 0.3s;
+    text-decoration: none;
+    font-weight: 500; /* font-medium */
+    color: var(--color-text-secondary);
+}
+
+.nav-link:hover {
+    background-color: #f3f4f6;
+}
+
+.nav-link-active {
+    background-color: rgba(164, 210, 244, 0.3);
+    color: var(--color-black);
+    font-weight: 600; /* font-semibold */
+}
+
+.nav-link-inactive {
+    color: var(--color-text-secondary);
+    font-weight: 500; /* font-medium */
+}
+
+/* ============================================
+   MOBILE HAMBURGER BUTTON (Schwebend)
+   ============================================ */
+.mobile-menu-toggle {
+    display: block;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: var(--z-mobile-header);
+    padding: 0.75rem;
+    background: white;
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mobile-menu-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.mobile-menu-toggle:active {
+    transform: scale(0.98);
+}
+
+/* Button nur auf Mobile/Tablet anzeigen */
+@media (min-width: 1024px) {
+    .mobile-menu-toggle {
+        display: none;
+    }
+}
+
+/* ============================================
+   APP WRAPPER & CONTAINER
+   ============================================ */
+.app-wrapper {
+    min-height: 100vh;
+    background: var(--color-background);
+}
+
+/* Mobile content padding to avoid button overlap */
+@media (max-width: 1023px) {
+    .app-wrapper > .app-container > *:not(#sidebar):not(#mobile-overlay) {
+        padding-top: 4.5rem !important;
+    }
+    
+    /* Archive page specific fix */
+    body .flex.justify-between.items-center.mb-6 {
+        margin-top: 1rem;
+    }
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* ============================================
+   SIDEBAR STYLES
+   ============================================ */
+.app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background: white;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+    z-index: var(--z-sidebar);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+}
+
+/* Sidebar aktiv (Mobile) */
+.app-sidebar.active {
+    transform: translateX(0) !important;
+}
+
+/* Sidebar auf Desktop immer sichtbar */
+@media (min-width: 1024px) {
+    .app-sidebar {
+        position: relative;
+        transform: translateX(0);
+        z-index: 1;
+    }
+}
+
+/* ============================================
+   SIDEBAR OVERLAY
+   ============================================ */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: calc(var(--z-sidebar) - 1);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Overlay nur auf Mobile/Tablet */
+@media (min-width: 1024px) {
+    .sidebar-overlay {
+        display: none;
+    }
+}
+
+/* ============================================
+   MAIN CONTENT AREA
+   ============================================ */
+.app-content {
+    flex: 1;
+    width: 100%;
+    min-width: 0; /* Wichtig für flex children */
+}
+
+/* Kein extra Padding nötig, da kein fester Header */
+
+/* Margin-Left für Desktop Sidebar */
+@media (min-width: 1024px) {
+    .app-content {
+        margin-left: 0; /* Sidebar ist relative, also kein margin nötig */
+    }
+}
+
+.content-wrapper {
+    padding: 1rem;
+}
+
+@media (min-width: 640px) {
+    .content-wrapper {
+        padding: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .content-wrapper {
+        padding: 2rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE TABLES
+   ============================================ */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive {
+    min-width: 100%;
+    border-collapse: collapse;
+}
+
+/* Mobile Table Stack View */
+@media (max-width: 767px) {
+    .table-stack {
+        display: block;
+    }
+    
+    .table-stack thead {
+        display: none;
+    }
+    
+    .table-stack tbody {
+        display: block;
+    }
+    
+    .table-stack tr {
+        display: block;
+        margin-bottom: 1rem;
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 1rem;
+    }
+    
+    .table-stack td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border: none;
+    }
+    
+    .table-stack td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        margin-right: 1rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE GRIDS
+   ============================================ */
+.grid-responsive {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+    .grid-responsive-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .grid-responsive-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .grid-responsive-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ============================================
+   RESPONSIVE CARDS
+   ============================================ */
+.card-responsive {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+@media (min-width: 640px) {
+    .card-responsive {
+        padding: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .card-responsive {
+        padding: 2rem;
+        border-radius: 0.75rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE FORMS
+   ============================================ */
+.form-responsive {
+    width: 100%;
+}
+
+.form-responsive input,
+.form-responsive select,
+.form-responsive textarea {
+    width: 100%;
+    min-height: 44px; /* Touch-friendly */
+    padding: 0.75rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+}
+
+.form-responsive label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+    .form-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ============================================
+   RESPONSIVE BUTTONS
+   ============================================ */
+.btn-responsive {
+    min-height: 44px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+@media (max-width: 639px) {
+    .btn-responsive {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Hide/Show auf verschiedenen Breakpoints */
+.mobile-only { display: block; }
+.tablet-only { display: none; }
+.desktop-only { display: none; }
+
+@media (min-width: 768px) {
+    .mobile-only { display: none; }
+    .tablet-only { display: block; }
+    .desktop-only { display: none; }
+}
+
+@media (min-width: 1024px) {
+    .mobile-only { display: none; }
+    .tablet-only { display: none; }
+    .desktop-only { display: block; }
+}
+
+/* Prevent body scroll when sidebar is open */
+body.sidebar-open {
+    overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+    body.sidebar-open {
+        overflow: auto;
+    }
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY
+   ============================================ */
+.text-responsive-xs { font-size: clamp(0.75rem, 2vw, 0.875rem); }
+.text-responsive-sm { font-size: clamp(0.875rem, 2.5vw, 1rem); }
+.text-responsive-base { font-size: clamp(1rem, 3vw, 1.125rem); }
+.text-responsive-lg { font-size: clamp(1.125rem, 3.5vw, 1.25rem); }
+.text-responsive-xl { font-size: clamp(1.25rem, 4vw, 1.5rem); }
+.text-responsive-2xl { font-size: clamp(1.5rem, 5vw, 2rem); }
+.text-responsive-3xl { font-size: clamp(1.875rem, 6vw, 2.5rem); }
+
+/* ============================================
+   RESPONSIVE SPACING
+   ============================================ */
+.p-responsive { padding: 1rem; }
+.px-responsive { padding-left: 1rem; padding-right: 1rem; }
+.py-responsive { padding-top: 1rem; padding-bottom: 1rem; }
+
+@media (min-width: 640px) {
+    .p-responsive { padding: 1.5rem; }
+    .px-responsive { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .py-responsive { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+}
+
+@media (min-width: 1024px) {
+    .p-responsive { padding: 2rem; }
+    .px-responsive { padding-left: 2rem; padding-right: 2rem; }
+    .py-responsive { padding-top: 2rem; padding-bottom: 2rem; }
+}

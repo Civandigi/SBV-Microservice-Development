@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Frontend Test</title>
+</head>
+<body>
+    <h1>SBV App - Login Test</h1>
+    <div id="status">Testing...</div>
+    <div id="result"></div>
+    
+    <script>
+        // Test if config.js loads correctly
+        const script = document.createElement('script');
+        script.src = '/js/config.js';
+        script.onload = () => {
+            console.log('config.js loaded');
+            console.log('API_BASE_URL:', window.API_BASE_URL);
+            document.getElementById('status').innerHTML = `
+                <p>✅ Config loaded</p>
+                <p>API URL: ${window.API_BASE_URL || 'Using relative URLs'}</p>
+                <p>Current location: ${window.location.href}</p>
+            `;
+            
+            // Test login
+            fetch(`${window.API_BASE_URL || ''}/api/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: 'admin@sbv.ch',
+                    password: 'admin123'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = `
+                    <h2>Login Test Result:</h2>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            })
+            .catch(err => {
+                document.getElementById('result').innerHTML = `
+                    <h2>Error:</h2>
+                    <pre>${err.message}</pre>
+                `;
+            });
+        };
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

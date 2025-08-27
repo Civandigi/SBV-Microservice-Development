@@ -1,0 +1,392 @@
+openapi: 3.0.0
+info:
+  title: SBV Gesuch Microservice API
+  description: API Specification for external Gesuch processing service
+  version: 1.0.0
+  contact:
+    name: SBV Professional Team
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://gesuch-service.sbv.ch
+    description: Production server
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  version:
+                    type: string
+                    example: 1.0.0
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /process-gesuch:
+    post:
+      summary: Process uploaded Gesuch file (PDF/Word)
+      description: Extracts Teilprojekte and structure from document
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - metadata
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF or Word document
+                metadata:
+                  type: object
+                  properties:
+                    gesuchId:
+                      type: integer
+                      description: ID from main database
+                    jahr:
+                      type: integer
+                      example: 2025
+                    titel:
+                      type: string
+                      example: Gesuch 2025 - Projekt A
+                    callbackUrl:
+                      type: string
+                      format: uri
+                      description: Webhook URL for async response
+      responses:
+        '202':
+          description: Processing started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                    example: job_123456789
+                  status:
+                    type: string
+                    enum: [processing, queued]
+                  message:
+                    type: string
+                    example: Gesuch wird verarbeitet
+                  estimatedTime:
+                    type: integer
+                    description: Estimated processing time in seconds
+                    example: 30
+        '400':
+          description: Invalid request
+        '503':
+          description: Service temporarily unavailable
+
+  /generate-rapporte:
+    post:
+      summary: Generate Rapport templates from Teilprojekte
+      description: Creates pre-filled Rapport templates based on extracted data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - gesuchId
+                - teilprojekte
+              properties:
+                gesuchId:
+                  type: integer
+                teilprojekte:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      nummer:
+                        type: string
+                      name:
+                        type: string
+                      budget:
+                        type: number
+                      massnahmen:
+                        type: array
+                        items:
+                          type: object
+                templateSettings:
+                  type: object
+                  properties:
+                    language:
+                      type: string
+                      enum: [de, fr, it]
+                      default: de
+                    includeDefaults:
+                      type: boolean
+                      default: true
+                callbackUrl:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Templates generated immediately
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  immediate:
+                    type: boolean
+                    example: true
+                  rapporte:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RapportTemplate'
+        '202':
+          description: Async generation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                  message:
+                    type: string
+
+  /export-word:
+    post:
+      summary: Export Rapporte to Word document
+      description: Generates formatted Word document from approved Rapporte
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rapportIds
+                - gesuchId
+              properties:
+                rapportIds:
+                  type: array
+                  items:
+                    type: integer
+                  description: IDs of Rapporte to export
+                gesuchId:
+                  type: integer
+                format:
+                  type: string
+                  enum: [docx, doc, pdf]
+                  default: docx
+                template:
+                  type: string
+                  enum: [standard, detailed, summary]
+                  default: standard
+                callbackUrl:
+                  type: string
+                  format: uri
+      responses:
+        '202':
+          description: Export generation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                  estimatedTime:
+                    type: integer
+                    description: Seconds
+                  message:
+                    type: string
+
+  /status/{jobId}:
+    get:
+      summary: Check job status
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [queued, processing, completed, failed]
+                  progress:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    description: Only present when completed
+                  error:
+                    type: string
+                    description: Only present when failed
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    RapportTemplate:
+      type: object
+      properties:
+        titel:
+          type: string
+        beschreibung:
+          type: string
+        teilprojektId:
+          type: integer
+        massnahmeId:
+          type: integer
+        fields:
+          type: object
+          additionalProperties: true
+        assignedTo:
+          type: integer
+          nullable: true
+
+    WebhookPayload:
+      oneOf:
+        - $ref: '#/components/schemas/GesuchProcessedWebhook'
+        - $ref: '#/components/schemas/RapporteReadyWebhook'
+        - $ref: '#/components/schemas/WordReadyWebhook'
+
+    GesuchProcessedWebhook:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [gesuch.processed]
+        jobId:
+          type: string
+        gesuchId:
+          type: integer
+        status:
+          type: string
+          enum: [completed, failed]
+        teilprojekte:
+          type: array
+          items:
+            type: object
+            properties:
+              nummer:
+                type: string
+              name:
+                type: string
+              beschreibung:
+                type: string
+              budget:
+                type: number
+              massnahmen:
+                type: array
+        error:
+          type: string
+          description: Only if failed
+
+    RapporteReadyWebhook:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [rapporte.ready]
+        jobId:
+          type: string
+        gesuchId:
+          type: integer
+        rapporte:
+          type: array
+          items:
+            $ref: '#/components/schemas/RapportTemplate'
+
+    WordReadyWebhook:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [export.ready]
+        jobId:
+          type: string
+        gesuchId:
+          type: integer
+        downloadUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+        fileSize:
+          type: integer
+        fileName:
+          type: string
+
+webhooks:
+  gesuchProcessed:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GesuchProcessedWebhook'
+      responses:
+        '200':
+          description: Webhook received
+
+  rapporteReady:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RapporteReadyWebhook'
+      responses:
+        '200':
+          description: Webhook received
+
+  wordReady:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WordReadyWebhook'
+      responses:
+        '200':
+          description: Webhook received
