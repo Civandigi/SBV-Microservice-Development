@@ -2,6 +2,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
 const { query } = require('../config/database');
 const config = require('../config');
 const { loginRateLimit } = require('../middleware/rateLimit.middleware');
@@ -10,23 +11,31 @@ const { asyncHandler, ValidationError, UnauthorizedError } = require('../middlew
 
 const router = express.Router();
 
+// Validation middleware
+const validate = (req, res, next) => {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+        return next();
+    }
+    const extractedErrors = [];
+    errors.array().map(err => extractedErrors.push({ [err.param]: err.msg }));
+
+    throw new ValidationError('Validierungsfehler', extractedErrors);
+};
+
 // Login endpoint
-router.post('/login', loginRateLimit, asyncHandler(async (req, res) => {
+router.post('/login',
+    loginRateLimit,
+    body('email').isEmail().withMessage('Gültige E-Mail-Adresse ist erforderlich').normalizeEmail(),
+    body('password').notEmpty().withMessage('Passwort ist erforderlich'),
+    validate,
+    asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    
-    // Input validation
-    if (!email || !password) {
-        throw new ValidationError('E-Mail und Passwort sind erforderlich');
-    }
-    
-    if (!email.includes('@')) {
-        throw new ValidationError('Ungültige E-Mail-Adresse');
-    }
     
     // Get user from database
     const result = await query(
         'SELECT id, email, name, password_hash, role, is_active, login_attempts, locked_until FROM users WHERE email = $1',
-        [email.toLowerCase()]
+        [email]
     );
     
     // SQLite returns array directly, not { rows: [...] }
@@ -53,22 +62,37 @@ router.post('/login', loginRateLimit, asyncHandler(async (req, res) => {
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     
     if (!isValidPassword) {
-        // Increment login attempts
-        const newAttempts = (user.login_attempts || 0) + 1;
-        let lockoutTime = null;
-        
-        // Lock account after max attempts
-        if (newAttempts >= config.security.loginMaxAttempts) {
-            lockoutTime = new Date(Date.now() + config.security.loginLockoutMinutes * 60 * 1000);
-        }
-        
-        await query(
-            'UPDATE users SET login_attempts = $1, locked_until = $2 WHERE id = $3',
-            [newAttempts, lockoutTime, user.id]
-        );
-        
-        if (lockoutTime) {
-            throw new UnauthorizedError(`Zu viele fehlgeschlagene Anmeldeversuche. Konto für ${config.security.loginLockoutMinutes} Minuten gesperrt.`);
+        if (process.env.USE_SQLITE === 'true') {
+            // SQLite-compatible logic (less robust, for tests)
+            const newAttempts = (user.login_attempts || 0) + 1;
+            let lockoutTime = null;
+            if (newAttempts >= config.security.loginMaxAttempts) {
+                lockoutTime = new Date(Date.now() + config.security.loginLockoutMinutes * 60 * 1000);
+            }
+            await query(
+                'UPDATE users SET login_attempts = ?, locked_until = ? WHERE id = ?',
+                [newAttempts, lockoutTime, user.id]
+            );
+            if (lockoutTime) {
+                throw new UnauthorizedError(`Zu viele fehlgeschlagene Anmeldeversuche. Konto für ${config.security.loginLockoutMinutes} Minuten gesperrt.`);
+            }
+        } else {
+            // Atomic update for PostgreSQL (production-safe)
+            const result = await query(
+                `UPDATE users
+                 SET login_attempts = login_attempts + 1,
+                     locked_until = CASE
+                                      WHEN login_attempts + 1 >= $1 THEN NOW() + INTERVAL '${config.security.loginLockoutMinutes} minutes'
+                                      ELSE locked_until
+                                    END
+                 WHERE id = $2
+                 RETURNING locked_until`,
+                [config.security.loginMaxAttempts, user.id]
+            );
+            const updatedUser = result.rows[0];
+            if (updatedUser.locked_until && new Date() < new Date(updatedUser.locked_until)) {
+                throw new UnauthorizedError(`Zu viele fehlgeschlagene Anmeldeversuche. Konto für ${config.security.loginLockoutMinutes} Minuten gesperrt.`);
+            }
         }
         
         throw new UnauthorizedError('Ungültige Anmeldedaten');
@@ -182,17 +206,16 @@ router.post('/validate-token', authenticateToken, (req, res) => {
 });
 
 // Password change endpoint  
-router.post('/change-password', authenticateToken, asyncHandler(async (req, res) => {
+router.post('/change-password',
+    authenticateToken,
+    body('currentPassword').notEmpty().withMessage('Aktuelles Passwort ist erforderlich'),
+    body('newPassword')
+        .isLength({ min: 12 }).withMessage('Neues Passwort muss mindestens 12 Zeichen lang sein')
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/)
+        .withMessage('Das Passwort muss mindestens 12 Zeichen lang sein und je einen Großbuchstaben, Kleinbuchstaben, eine Zahl und ein Sonderzeichen enthalten.'),
+    validate,
+    asyncHandler(async (req, res) => {
     const { currentPassword, newPassword } = req.body;
-    
-    // Input validation
-    if (!currentPassword || !newPassword) {
-        throw new ValidationError('Aktuelles und neues Passwort sind erforderlich');
-    }
-    
-    if (newPassword.length < 6) {
-        throw new ValidationError('Neues Passwort muss mindestens 6 Zeichen lang sein');
-    }
     
     // Get current password hash
     const result = await query(
