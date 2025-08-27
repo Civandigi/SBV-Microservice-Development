@@ -1,287 +1,306 @@
 // Gesuch Controller - Production Version
-const db = require('../config/database');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs').promises;
-const textExtractor = require('../services/gesuch/text-extractor.service');
-const config = require('../config/gesuch.config');
-const { asyncHandler } = require('../middleware/error.middleware');
+const { query } = require('../config/database');
+const microserviceClient = require('../services/gesuch-microservice.client');
+const fallbackService = require('../services/gesuch-fallback.service');
+const { asyncHandler } = require('../middleware/errorHandler');
 
-// Multer Setup
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const dir = path.join(__dirname, '../../', config.upload.storageDir);
-    try {
-      await fs.mkdir(dir, { recursive: true });
-      cb(null, dir);
-    } catch (error) {
-      cb(error);
-    }
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const sanitized = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-    cb(null, `gesuch-${unique}-${sanitized}`);
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: config.upload.maxFileSize },
-  fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (config.upload.allowedTypes.includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Nur PDF und Word-Dokumente sind erlaubt'));
-    }
-  }
-}).single('gesuchFile');
-
-// Upload und Verarbeitung
-const uploadGesuch = asyncHandler(async (req, res) => {
-  console.log('[Gesuch] Upload started');
-
-  if (!req.file) {
-    return res.status(400).json({
-      success: false,
-      error: 'Keine Datei hochgeladen'
+class GesuchController {
+    static upload = asyncHandler(async (req, res) => {
+        try {
+            const { jahr, titel, beschreibung } = req.body;
+            const file = req.file;
+            
+            if (!file) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Keine Datei hochgeladen'
+                });
+            }
+            
+            // 1. Speichere Gesuch-Metadaten
+            const gesuchResult = await query(`
+                INSERT INTO gesuche 
+                (jahr, titel, beschreibung, datei_name, datei_groesse, status, bearbeitet_von)
+                VALUES (?, ?, ?, ?, ?, 'hochgeladen', ?)
+            `, [jahr, titel, beschreibung, file.originalname, file.size, req.user.id]);
+            
+            const gesuchId = gesuchResult.lastID;
+            
+            // 2. Sende an Microservice
+            const serviceResult = await microserviceClient.processGesuch(
+                file.buffer,
+                file.originalname,
+                { gesuchId, jahr, titel }
+            );
+            
+            if (serviceResult.jobId) {
+                // 3. Update mit Job ID
+                await query(
+                    'UPDATE gesuche SET service_job_id = ?, status = ?, processing_started_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    [serviceResult.jobId, 'verarbeitung', gesuchId]
+                );
+                
+                res.json({
+                    success: true,
+                    gesuchId,
+                    jobId: serviceResult.jobId,
+                    status: 'processing',
+                    message: 'Gesuch wird automatisch verarbeitet'
+                });
+            } else {
+                // 4. Fallback zu manuell
+                await query(
+                    'UPDATE gesuche SET status = ? WHERE id = ?',
+                    ['manuell', gesuchId]
+                );
+                
+                res.json({
+                    success: true,
+                    gesuchId,
+                    status: 'manual',
+                    message: 'Bitte Teilprojekte manuell erfassen'
+                });
+            }
+            
+        } catch (error) {
+            console.error('Upload error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Upload fehlgeschlagen'
+            });
+        }
     });
-  }
-
-  const { jahr, titel, beschreibung } = req.body;
-  const userId = req.user.id;
-
-  console.log('[Gesuch] File received:', req.file.originalname);
-
-  // Extract text from document
-  const extraction = await textExtractor.extract(
-    req.file.path,
-    req.file.mimetype
-  );
-
-  // Save to database
-  const gesuchResult = await db.query(
-    `INSERT INTO gesuche (
-        jahr, titel, beschreibung, datei_pfad, datei_name,
-        datei_typ, datei_groesse, extrahierte_daten,
-        status, bearbeitet_von, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
-      RETURNING *`,
-    [
-      jahr || new Date().getFullYear(),
-      titel || `Gesuch ${req.file.originalname}`,
-      beschreibung || '',
-      req.file.path,
-      req.file.originalname,
-      req.file.mimetype,
-      req.file.size,
-      JSON.stringify(extraction),
-      extraction.success ? 'verarbeitet' : 'fehler',
-      userId
-    ]
-  );
-
-  const gesuch = gesuchResult.rows[0];
-  console.log('[Gesuch] Saved to DB with ID:', gesuch.id);
-
-  // Save Teilprojekte
-  if (extraction.teilprojekte && extraction.teilprojekte.length > 0) {
-    for (const tp of extraction.teilprojekte) {
-      await db.query(
-        `INSERT INTO gesuch_teilprojekte
-           (gesuch_id, nummer, name, budget, automatisch_erkannt, created_at)
-           VALUES ($1, $2, $3, $4, $5, NOW())`,
-        [gesuch.id, tp.nummer, tp.name, tp.budget || 0, tp.automatisch_erkannt]
-      );
-    }
-    console.log(`[Gesuch] Saved ${extraction.teilprojekte.length} Teilprojekte`);
-  }
-
-  res.json({
-    success: true,
-    gesuch: {
-      id: gesuch.id,
-      titel: gesuch.titel,
-      status: gesuch.status
-    },
-    extraction: {
-      success: extraction.success,
-      teilprojekte_count: extraction.teilprojekte ? extraction.teilprojekte.length : 0,
-      teilprojekte: extraction.teilprojekte || [],
-      metadata: extraction.metadata || {},
-      language: extraction.language
-    },
-    message: extraction.success
-      ? `${extraction.teilprojekte.length} Teilprojekte erkannt`
-      : 'Dokument hochgeladen, automatische Erkennung fehlgeschlagen - bitte manuell hinzufügen'
-  });
-});
-
-// Teilprojekte aktualisieren
-const updateTeilprojekte = asyncHandler(async (req, res) => {
-  const { gesuchId } = req.params;
-  const { teilprojekte } = req.body;
-
-  console.log(`[Gesuch] Updating Teilprojekte for Gesuch ${gesuchId}`);
-
-  // Delete old entries
-  await db.query('DELETE FROM gesuch_teilprojekte WHERE gesuch_id = $1', [gesuchId]);
-
-  // Insert updated entries
-  for (const tp of teilprojekte) {
-    await db.query(
-      `INSERT INTO gesuch_teilprojekte
-         (gesuch_id, nummer, name, budget, manuell_korrigiert, created_at)
-         VALUES ($1, $2, $3, $4, true, NOW())`,
-      [gesuchId, tp.nummer, tp.name, tp.budget || 0]
-    );
-  }
-
-  // Update gesuch status
-  await db.query(
-    `UPDATE gesuche
-       SET korrigierte_daten = $1, 
-           status = 'korrigiert',
-           updated_at = NOW()
-       WHERE id = $2`,
-    [JSON.stringify({ teilprojekte }), gesuchId]
-  );
-
-  res.json({
-    success: true,
-    message: `${teilprojekte.length} Teilprojekte aktualisiert`
-  });
-});
-
-// Rapporte aus Gesuch erstellen
-const createRapporte = asyncHandler(async (req, res) => {
-  const { gesuchId } = req.params;
-
-  console.log(`[Gesuch] Creating Rapporte for Gesuch ${gesuchId}`);
-
-  // Get Gesuch
-  const gesuchResult = await db.query(
-    'SELECT * FROM gesuche WHERE id = $1',
-    [gesuchId]
-  );
-
-  if (gesuchResult.rows.length === 0) {
-    return res.status(404).json({
-      success: false,
-      error: 'Gesuch nicht gefunden'
+    
+    static checkStatus = asyncHandler(async (req, res) => {
+        const { gesuchId } = req.params;
+        
+        const gesuch = await query(
+            'SELECT * FROM gesuche WHERE id = ?',
+            [gesuchId]
+        );
+        
+        if (gesuch.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Gesuch nicht gefunden'
+            });
+        }
+        
+        const gesuchData = gesuch[0];
+        
+        // Wenn Service Job vorhanden, prüfe Status
+        if (gesuchData.service_job_id) {
+            const jobStatus = await microserviceClient.getJobStatus(gesuchData.service_job_id);
+            
+            // Update lokalen Status basierend auf Service Status
+            if (jobStatus.status === 'completed') {
+                await query(
+                    'UPDATE gesuche SET status = ?, processing_completed_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    ['abgeschlossen', gesuchId]
+                );
+                gesuchData.status = 'abgeschlossen';
+            } else if (jobStatus.status === 'failed') {
+                await query(
+                    'UPDATE gesuche SET status = ?, service_error = ? WHERE id = ?',
+                    ['fehler', jobStatus.message, gesuchId]
+                );
+                gesuchData.status = 'fehler';
+                gesuchData.service_error = jobStatus.message;
+            }
+        }
+        
+        // Hole Teilprojekte
+        const teilprojekte = await query(
+            'SELECT * FROM teilprojekte WHERE gesuch_id = ? ORDER BY nummer',
+            [gesuchId]
+        );
+        
+        res.json({
+            success: true,
+            gesuch: gesuchData,
+            teilprojekte,
+            jobStatus: gesuchData.service_job_id ? await microserviceClient.getJobStatus(gesuchData.service_job_id) : null
+        });
     });
-  }
-
-  const gesuch = gesuchResult.rows[0];
-
-  // Get Teilprojekte
-  const tpResult = await db.query(
-    'SELECT * FROM gesuch_teilprojekte WHERE gesuch_id = $1',
-    [gesuchId]
-  );
-
-  const teilprojekte = tpResult.rows;
-
-  if (teilprojekte.length === 0) {
-    return res.status(400).json({
-      success: false,
-      error: 'Keine Teilprojekte vorhanden'
+    
+    static createManualTeilprojekte = asyncHandler(async (req, res) => {
+        const { gesuchId } = req.params;
+        const { teilprojekte } = req.body;
+        
+        if (!teilprojekte || !Array.isArray(teilprojekte)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Teilprojekte müssen als Array übergeben werden'
+            });
+        }
+        
+        const result = await fallbackService.createManualTeilprojekte(gesuchId, teilprojekte);
+        
+        res.json({
+            success: true,
+            ...result
+        });
     });
-  }
-
-  const created = [];
-
-  // Create Rapport for each Teilprojekt
-  for (const tp of teilprojekte) {
-    const rapportResult = await db.query(
-      `INSERT INTO rapporte
-         (titel, beschreibung, status, benutzer_id, gesuch_id, teilprojekt_id, budget, created_at, updated_at)
-         VALUES ($1, $2, 'entwurf', $3, $4, $5, $6, NOW(), NOW())
-         RETURNING id, titel`,
-      [
-        `${tp.name} - ${gesuch.jahr}`,
-        `Rapport für Teilprojekt: ${tp.name}\nBudget: CHF ${tp.budget}\nAutomatisch erstellt aus Gesuch: ${gesuch.titel}`,
-        req.user.id,
-        gesuchId,
-        tp.id,
-        tp.budget
-      ]
-    );
-
-    created.push(rapportResult.rows[0]);
-  }
-
-  // Update Gesuch status
-  await db.query(
-    `UPDATE gesuche
-       SET status = 'rapporte_erstellt', 
-           updated_at = NOW() 
-       WHERE id = $1`,
-    [gesuchId]
-  );
-
-  console.log(`[Gesuch] Created ${created.length} Rapporte`);
-
-  res.json({
-    success: true,
-    message: `${created.length} Rapporte erfolgreich erstellt`,
-    rapporte: created
-  });
-});
-
-// Alle Gesuche abrufen
-const getAllGesuche = asyncHandler(async (req, res) => {
-  const result = await db.query(`
-      SELECT g.*, 
-             COUNT(gt.id) as teilprojekte_count,
-             COALESCE(u.name, u.email) as bearbeiter
-      FROM gesuche g
-      LEFT JOIN gesuch_teilprojekte gt ON g.id = gt.gesuch_id
-      LEFT JOIN users u ON g.bearbeitet_von = u.id
-      GROUP BY g.id, u.name, u.email
-      ORDER BY g.created_at DESC
-    `);
-
-  res.json({
-    success: true,
-    gesuche: result.rows
-  });
-});
-
-// Einzelnes Gesuch mit Details
-const getGesuchDetails = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  const gesuchResult = await db.query(
-    'SELECT * FROM gesuche WHERE id = $1',
-    [id]
-  );
-
-  if (gesuchResult.rows.length === 0) {
-    return res.status(404).json({
-      success: false,
-      error: 'Gesuch nicht gefunden'
+    
+    static generateRapporte = asyncHandler(async (req, res) => {
+        const { gesuchId } = req.params;
+        const { teilprojektIds, settings = {} } = req.body;
+        
+        // Hole Teilprojekte
+        const teilprojekte = await query(
+            'SELECT * FROM teilprojekte WHERE gesuch_id = ? AND id IN (?)',
+            [gesuchId, teilprojektIds.join(',')]
+        );
+        
+        if (teilprojekte.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Keine Teilprojekte gefunden'
+            });
+        }
+        
+        // Versuche Service
+        const serviceResult = await microserviceClient.generateRapporte(gesuchId, teilprojekte, settings);
+        
+        if (serviceResult.jobId) {
+            res.json({
+                success: true,
+                jobId: serviceResult.jobId,
+                status: 'processing',
+                message: 'Rapporte werden automatisch generiert'
+            });
+        } else {
+            // Fallback: Erstelle manuelle Rapporte
+            const rapportResults = [];
+            
+            for (const teilprojekt of teilprojekte) {
+                const rapportResult = await fallbackService.createManualRapport(teilprojekt.id, req.user.id);
+                rapportResults.push(rapportResult);
+            }
+            
+            res.json({
+                success: true,
+                status: 'manual',
+                message: `${rapportResults.length} Rapporte manuell erstellt`,
+                rapporte: rapportResults
+            });
+        }
     });
-  }
-
-  const teilprojekteResult = await db.query(
-    'SELECT * FROM gesuch_teilprojekte WHERE gesuch_id = $1 ORDER BY nummer',
-    [id]
-  );
-
-  res.json({
-    success: true,
-    gesuch: gesuchResult.rows[0],
-    teilprojekte: teilprojekteResult.rows
-  });
-});
+    
+    static exportWord = asyncHandler(async (req, res) => {
+        const { gesuchId } = req.params;
+        const { rapportIds, format = 'docx' } = req.body;
+        
+        // Versuche Service
+        const serviceResult = await microserviceClient.exportWord(rapportIds, gesuchId, format);
+        
+        if (serviceResult.jobId) {
+            res.json({
+                success: true,
+                jobId: serviceResult.jobId,
+                status: 'processing',
+                message: 'Word-Dokument wird automatisch erstellt'
+            });
+        } else {
+            // Fallback: Manueller Export
+            const exportResult = await fallbackService.exportManualWord(rapportIds, gesuchId);
+            
+            res.json({
+                success: true,
+                ...exportResult
+            });
+        }
+    });
+    
+    static checkExportStatus = asyncHandler(async (req, res) => {
+        const { jobId } = req.params;
+        
+        // Prüfe Service Status
+        const serviceStatus = await microserviceClient.getJobStatus(jobId);
+        
+        if (serviceStatus.status !== 'unknown') {
+            res.json({
+                success: true,
+                ...serviceStatus
+            });
+        } else {
+            // Prüfe manuellen Export
+            const manualStatus = await fallbackService.getManualExportStatus(jobId);
+            
+            res.json({
+                success: true,
+                ...manualStatus
+            });
+        }
+    });
+    
+    static listGesuche = asyncHandler(async (req, res) => {
+        const gesuche = await query(`
+            SELECT g.*, u.username as bearbeiter_name,
+                   COUNT(t.id) as teilprojekt_count,
+                   COUNT(r.id) as rapport_count
+            FROM gesuche g
+            LEFT JOIN users u ON g.bearbeitet_von = u.id
+            LEFT JOIN teilprojekte t ON g.id = t.gesuch_id
+            LEFT JOIN rapporte r ON t.id = r.teilprojekt_id
+            GROUP BY g.id
+            ORDER BY g.created_at DESC
+        `);
+        
+        res.json({
+            success: true,
+            gesuche
+        });
+    });
+    
+    static getGesuchDetails = asyncHandler(async (req, res) => {
+        const { gesuchId } = req.params;
+        
+        const gesuch = await query(
+            'SELECT * FROM gesuche WHERE id = ?',
+            [gesuchId]
+        );
+        
+        if (gesuch.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Gesuch nicht gefunden'
+            });
+        }
+        
+        const teilprojekte = await query(`
+            SELECT t.*, COUNT(r.id) as rapport_count
+            FROM teilprojekte t
+            LEFT JOIN rapporte r ON t.id = r.teilprojekt_id
+            WHERE t.gesuch_id = ?
+            GROUP BY t.id
+            ORDER BY t.nummer
+        `, [gesuchId]);
+        
+        const rapporte = await query(`
+            SELECT r.*, t.name as teilprojekt_name, t.nummer as teilprojekt_nummer
+            FROM rapporte r
+            JOIN teilprojekte t ON r.teilprojekt_id = t.id
+            WHERE t.gesuch_id = ?
+            ORDER BY t.nummer, r.created_at
+        `, [gesuchId]);
+        
+        res.json({
+            success: true,
+            gesuch: gesuch[0],
+            teilprojekte,
+            rapporte
+        });
+    });
+}
 
 module.exports = {
-  upload,
-  uploadGesuch,
-  updateTeilprojekte,
-  createRapporte,
-  getAllGesuche,
-  getGesuchDetails
+    uploadGesuch: GesuchController.upload,
+    updateTeilprojekte: GesuchController.createManualTeilprojekte,
+    createRapporte: GesuchController.generateRapporte,
+    getAllGesuche: GesuchController.listGesuche,
+    getGesuchDetails: GesuchController.getGesuchDetails,
+    exportWord: GesuchController.exportWord,
+    checkStatus: GesuchController.checkStatus,
+    checkExportStatus: GesuchController.checkExportStatus
 };

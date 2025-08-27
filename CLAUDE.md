@@ -1,43 +1,10 @@
-# SBV Professional V2 - Agent OS Project
-
-## Agent OS Documentation
-
-### Product Context
-- **Mission & Vision:** @.agent-os/product/mission.md
-- **Technical Architecture:** @.agent-os/product/tech-stack.md
-- **Development Roadmap:** @.agent-os/product/roadmap.md
-- **Decision History:** @.agent-os/product/decisions.md
-
-### Development Standards
-- **Code Style:** @~/.agent-os/standards/code-style.md
-- **Best Practices:** @~/.agent-os/standards/best-practices.md
-
-### Project Management
-- **Active Specs:** @.agent-os/specs/
-- **Spec Planning:** Use `@~/.agent-os/instructions/create-spec.md`
-- **Tasks Execution:** Use `@~/.agent-os/instructions/execute-tasks.md`
-
-## Workflow Instructions
-
-When asked to work on this codebase:
-
-1. **First**, check @.agent-os/product/roadmap.md for current priorities
-2. **Then**, follow the appropriate instruction file:
-   - For new features: @.agent-os/instructions/create-spec.md
-   - For tasks execution: @.agent-os/instructions/execute-tasks.md
-3. **Always**, adhere to the standards in the files listed above
-
-## Important Notes
-
-- Product-specific files in `.agent-os/product/` override any global standards
-- User's specific instructions override (or amend) instructions found in `.agent-os/specs/...`
-- Always adhere to established patterns, code style, and best practices documented above.
+# SBV Professional V2 - Projekt Dokumentation
 
 ## Current Development Status
 
-**Phase:** Phase 1 - Critical Bug Fixes and Integration  
-**Priority:** Frontend-Backend Rapport Integration (rapport page API connection issues)  
-**Next Steps:** Review @.agent-os/product/roadmap.md Phase 1 tasks
+**Phase:** Phase 1 - Database-Fundament mit Microservice-Support (10-25%)
+**Priority:** Schema für Microservice-Integration implementieren
+**Next Steps:** Folge IMPLEMENTATION-PLAN-WITH-MICROSERVICE.md
 
 ### Known Issues Requiring Attention
 1. **Critical:** Frontend not connected to backend API on rapport page
@@ -73,3 +40,10 @@ When asked to work on this codebase:
 - PostgreSQL with clean normalized schema
 - Express.js modular architecture
 - Swiss Corporate Design - custom CSS implementation
+
+## Development Plan
+
+**Main Implementation Plan:** IMPLEMENTATION-PLAN-WITH-MICROSERVICE.md
+- Phase 1: Database-Fundament (10-25%) - 3 Tage
+- Phase 2: Backend API Integration (25-45%) - 4 Tage
+- Phase 3: Frontend Service-Status (45-70%) - 5 Tage
